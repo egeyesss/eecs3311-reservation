@@ -4,7 +4,7 @@
 
 ## Team Members
 1. Ege Yesilyurt - egeyesss
-2. name2 - user
+2. Adren Reuel (219191881) - adrenreuel
 3. name3 - user
 4. name4 - user
 
