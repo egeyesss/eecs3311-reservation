@@ -1,5 +1,3 @@
-# eecs3311-reservation
-
 # EECS 3311 - YorkU Lab Equipment Reservation Platform
 
 ## Team Members
