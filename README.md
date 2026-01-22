@@ -5,7 +5,7 @@
 ## Team Members
 1. Ege Yesilyurt - egeyesss
 2. Adren Reuel - adrenreuel
-3. name3 - user
+3. Weiqin Situ - kevinsitu1706
 4. name4 - user
 
 ## Project Overview
