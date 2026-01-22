@@ -6,7 +6,7 @@
 1. Ege Yesilyurt - egeyesss
 2. Adren Reuel - adrenreuel
 3. Weiqin Situ - kevinsitu1706
-4. name4 - user
+4. Gurnoor Kahlon - gurnoor-kahlon
 
 ## Project Overview
 A GUI-based Java program for managing laboratory equipment reservations at York University.
