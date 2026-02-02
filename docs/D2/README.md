@@ -30,8 +30,8 @@ eecs3311-reservation/
 │   │       └── styles/                     # CSS stylesheets
 │   └── test/                               # Unit tests
 ├── target/                                 # Maven build output (auto-generated)
-├── diagrams/                               # D1 UML diagrams
-├── docs/                                   # D1 documentation
+├── diagrams/                               # UML diagrams
+├── docs/                                   # Deliverable documentations
 ├── .gitignore                              # Git ignore rules
 ├── pom.xml                                 # Maven configuration
 └── README.md                               # Project README
