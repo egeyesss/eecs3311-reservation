@@ -9,7 +9,34 @@
 - **Testing:** JUnit 5.10.1
 
 ### 2. Project Structure Created
+```
+eecs3311-reservation/
+├── src/
+│   ├── main/
+│   │   ├── java/ca/yorku/eecs3311/
+│   │   │   ├── App.java                    # Main application entry point
+│   │   │   ├── controller/                 # JavaFX controllers (FXML handlers)
+│   │   │   ├── dao/                        # Data Access Objects (CSV operations)
+│   │   │   ├── model/                      # Domain models
+│   │   │   │   ├── user/                   # User hierarchy classes
+│   │   │   │   ├── equipment/              # Equipment-related classes
+│   │   │   │   ├── booking/                # Booking system classes
+│   │   │   │   ├── payment/                # Payment processing classes
+│   │   │   │   └── enums/                  # Enumerations
+│   │   │   └── service/                    # Business logic services
+│   │   └── resources/
+│   │       ├── data/                       # CSV database files
+│   │       ├── views/                      # FXML UI layouts
+│   │       └── styles/                     # CSS stylesheets
+│   └── test/                               # Unit tests
+├── target/                                 # Maven build output (auto-generated)
+├── diagrams/                               # D1 UML diagrams
+├── docs/                                   # D1 documentation
+├── .gitignore                              # Git ignore rules
+├── pom.xml                                 # Maven configuration
+└── README.md                               # Project README
 
+```
 
 ### Deliverable 2 Requirements (Due Date: TBD)
 1. Redesign project with **6+ design patterns**
