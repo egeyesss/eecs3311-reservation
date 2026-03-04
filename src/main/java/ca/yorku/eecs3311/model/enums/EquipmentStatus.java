@@ -1,6 +1,5 @@
 package ca.yorku.eecs3311.model.enums;
 
-/** Represents the operational states of a piece of equipment. */
 public enum EquipmentStatus {
     /** Equipment is ready to be reserved or used. */
     AVAILABLE,

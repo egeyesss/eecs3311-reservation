@@ -1,6 +1,5 @@
 package ca.yorku.eecs3311.model.enums;
 
-/** Represents the roles a user can hold within the reservation system. */
 public enum UserType {
     /** Enrolled student with standard booking privileges. */
     STUDENT,

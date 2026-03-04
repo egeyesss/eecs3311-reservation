@@ -1,6 +1,5 @@
 package ca.yorku.eecs3311.model.enums;
 
-/** Represents the supported payment methods for a booking. */
 public enum PaymentMethod {
     /** Payment via personal credit card. */
     CREDIT_CARD,
