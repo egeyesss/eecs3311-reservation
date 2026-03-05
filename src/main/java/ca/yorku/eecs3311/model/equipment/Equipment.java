@@ -18,35 +18,31 @@ public class Equipment {
 	private String maintenanceNotes;
 	private LocalDateTime lastMaintenanceDate;
 	private List<Sensor> sensors;
+	private String labID;   // ← added for DAO persistence
 
-	public Equipment(String equipmentID, String name, String description, String category, double hourlyRate) {
+	public Equipment(String equipmentID, String name, String description,
+					 String category, double hourlyRate) {
 		this.equipmentID = equipmentID;
-		this.name = name;
+		this.name        = name;
 		this.description = description;
-		this.category = category;
-		this.hourlyRate = hourlyRate;
-		this.status = EquipmentStatus.AVAILABLE;
-		this.sensors = new ArrayList<>();
+		this.category    = category;
+		this.hourlyRate  = hourlyRate;
+		this.status      = EquipmentStatus.AVAILABLE;
+		this.sensors     = new ArrayList<>();
+		this.labID       = "";
 	}
 
 	public boolean isAvailable() {
 		return this.status == EquipmentStatus.AVAILABLE;
 	}
 
-	public void reserve() {
-		this.status = EquipmentStatus.IN_USE;
-	}
+	public void reserve()  { this.status = EquipmentStatus.IN_USE; }
+	public void release()  { this.status = EquipmentStatus.AVAILABLE; }
 
-	public void release() {
-		this.status = EquipmentStatus.AVAILABLE;
-	}
-
-	public void updateStatus(EquipmentStatus status) {
-		this.status = status;
-	}
+	public void updateStatus(EquipmentStatus status) { this.status = status; }
 
 	public List<String> getAvailableTimeSlots() {
-		// Placeholder: real implementation would consult bookings
+		// PLACEHOLDER — replace with BookingDAO query in Phase 6
 		if (!isAvailable()) return Collections.emptyList();
 		List<String> slots = new ArrayList<>();
 		slots.add("09:00-10:00");
@@ -68,27 +64,25 @@ public class Equipment {
 		if (!sensors.contains(sensor)) sensors.add(sensor);
 	}
 
-	public void removeSensor(Sensor sensor) {
-		sensors.remove(sensor);
-	}
+	public void removeSensor(Sensor sensor) { sensors.remove(sensor); }
 
-	// Getters / setters
-	public String getEquipmentID() { return equipmentID; }
-	public String getName() { return name; }
-	public String getDescription() { return description; }
-	public String getCategory() { return category; }
-	public EquipmentStatus getStatus() { return status; }
-	public double getHourlyRate() { return hourlyRate; }
-	public String getMaintenanceNotes() { return maintenanceNotes; }
-	public LocalDateTime getLastMaintenanceDate() { return lastMaintenanceDate; }
-	public List<Sensor> getSensors() { return Collections.unmodifiableList(sensors); }
+	public String getEquipmentID()              { return equipmentID; }
+	public String getName()                     { return name; }
+	public String getDescription()              { return description; }
+	public String getCategory()                 { return category; }
+	public EquipmentStatus getStatus()          { return status; }
+	public double getHourlyRate()               { return hourlyRate; }
+	public String getMaintenanceNotes()         { return maintenanceNotes; }
+	public LocalDateTime getLastMaintenanceDate(){ return lastMaintenanceDate; }
+	public List<Sensor> getSensors()            { return Collections.unmodifiableList(sensors); }
+	public String getLabID()                    { return labID; }
 
-	public void setMaintenanceNotes(String maintenanceNotes) { this.maintenanceNotes = maintenanceNotes; }
-	public void setLastMaintenanceDate(LocalDateTime lastMaintenanceDate) { this.lastMaintenanceDate = lastMaintenanceDate; }
+	public void setMaintenanceNotes(String maintenanceNotes)         { this.maintenanceNotes = maintenanceNotes; }
+	public void setLastMaintenanceDate(LocalDateTime date)           { this.lastMaintenanceDate = date; }
+	public void setLabID(String labID)                               { this.labID = labID; }
 
 	@Override
 	public String toString() {
 		return "Equipment{" + equipmentID + ", name=" + name + ", status=" + status + "}";
 	}
 }
-
