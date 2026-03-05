@@ -10,7 +10,6 @@ import java.util.UUID;
  * heuristics to determine if the reading is abnormal.
  */
 public class SensorData {
-
 	private final String dataID;
 	private final String sensorID;
 	private final LocalDateTime timestamp;
@@ -30,6 +29,7 @@ public class SensorData {
 		this.runTime = runTime;
 	}
 
+	// some default abnormal triggers for now
 	public boolean isAbnormal() {
 		if (temperature > 80.0) return true;
 		if (runTime != null && runTime.toHours() > 72) return true;
@@ -54,4 +54,3 @@ public class SensorData {
 				", status=" + operationStatus + ", temp=" + temperature + "}";
 	}
 }
-

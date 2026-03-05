@@ -39,9 +39,7 @@ public class Manager extends User {
     public double getHourlyRate() { return HOURLY_RATE; }
 
     public void assignLab(Lab lab) {
-        if (!assignedLabs.contains(lab)) {
-            assignedLabs.add(lab);
-        }
+        if (!assignedLabs.contains(lab)) assignedLabs.add(lab);
     }
 
     public void removeLab(Lab lab) {
@@ -49,9 +47,7 @@ public class Manager extends User {
     }
 
     public void addPermission(String permission) {
-        if (!permissions.contains(permission)) {
-            permissions.add(permission);
-        }
+        if (!permissions.contains(permission)) permissions.add(permission);
     }
 
     public void removePermission(String permission) {
@@ -73,6 +69,6 @@ public class Manager extends User {
     @Override
     public String toString() {
         return "Manager{managerID='" + managerID + "', assignedLabs=" + assignedLabs.size() +
-               ", permissions=" + permissions + ", " + super.toString() + "}";
+                ", permissions=" + permissions + ", " + super.toString() + "}";
     }
 }

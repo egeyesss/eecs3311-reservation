@@ -1,17 +1,16 @@
 package ca.yorku.eecs3311.model.payment;
 
-/** 
- * Simple institutional account representing department funds.
- */
 public class InstitutionalAccount {
 
 	private final String accountID;
 	private final String department;
+	private final String userID;
 	private double balance;
 
-	public InstitutionalAccount(String accountID, String department, double balance) {
+	public InstitutionalAccount(String accountID, String department, String userID, double balance) {
 		this.accountID = accountID;
 		this.department = department;
+		this.userID = userID;
 		this.balance = balance;
 	}
 
@@ -30,5 +29,11 @@ public class InstitutionalAccount {
 	public double getBalance() { return balance; }
 	public String getAccountID() { return accountID; }
 	public String getDepartment() { return department; }
-}
+	public String getUserID() { return userID; }
 
+	@Override
+	public String toString() {
+		return "InstitutionalAccount{accountID='" + accountID + "', department='" + department +
+				"', userID='" + userID + "', balance=" + balance + "}";
+	}
+}
