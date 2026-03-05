@@ -1,15 +1,12 @@
 package ca.yorku.eecs3311.model.equipment;
 
-import java.time.LocalDateTime;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Basic sensor implementation that can register observers and send updates.
- */
 public class Sensor implements SensorSubject {
 
 	private final String sensorID;
@@ -52,12 +49,6 @@ public class Sensor implements SensorSubject {
 		this.lastUpdate = LocalDateTime.now();
 	}
 
-	public String getSensorID() { return sensorID; }
-	public String getSensorType() { return sensorType; }
-	public String getEquipmentID() { return equipmentID; }
-	public LocalDateTime getLastUpdate() { return lastUpdate; }
-	public SensorData getLastData() { return lastData; }
-
 	@Override
 	public synchronized void register(SensorObserver o) {
 		if (o == null) return;
@@ -79,9 +70,14 @@ public class Sensor implements SensorSubject {
 		}
 	}
 
+	public String getSensorID() { return sensorID; }
+	public String getSensorType() { return sensorType; }
+	public String getEquipmentID() { return equipmentID; }
+	public LocalDateTime getLastUpdate() { return lastUpdate; }
+	public SensorData getLastData() { return lastData; }
+
 	@Override
 	public String toString() {
 		return "Sensor{" + sensorID + ", type=" + sensorType + ", eq=" + equipmentID + "}";
 	}
 }
-
