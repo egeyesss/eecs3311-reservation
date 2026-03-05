@@ -6,7 +6,9 @@ public class PendingState implements BookingState {
 
 	private final Booking booking;
 
-	public PendingState(Booking booking) { this.booking = booking; }
+	public PendingState(Booking booking) {
+		this.booking = booking;
+	}
 
 	@Override
 	public void confirm() {
@@ -20,20 +22,21 @@ public class PendingState implements BookingState {
 
 	@Override
 	public void activate() {
-		throw new IllegalStateException("Cannot activate a pending booking");
+		throw new IllegalStateException("Cannot activate a PENDING booking. Confirm it first.");
 	}
 
 	@Override
 	public void complete() {
-		throw new IllegalStateException("Cannot complete a pending booking");
+		throw new IllegalStateException("Cannot complete a PENDING booking.");
 	}
 
 	@Override
 	public void extend(LocalDateTime newEnd) {
-		booking.setEndTime(newEnd);
+		throw new IllegalStateException("Cannot extend a PENDING booking. Confirm it first.");
 	}
 
 	@Override
-	public String getStateName() { return "PENDING"; }
+	public String getStateName() {
+		return "PENDING";
+	}
 }
-

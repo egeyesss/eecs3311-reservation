@@ -1,32 +1,44 @@
 package ca.yorku.eecs3311.model.payment;
 
-/**
- * Simulated debit card payment strategy.
- */
 public class DebitCardPayment implements PaymentStrategy {
 
 	private final String cardNumber;
-	private final String cardHolder;
+	private final String pin;
+	private final String cardHolderName;
+	private double accountBalance;
 
-	public DebitCardPayment(String cardNumber, String cardHolder) {
+	public DebitCardPayment(String cardNumber, String pin, String cardHolderName, double accountBalance) {
 		this.cardNumber = cardNumber;
-		this.cardHolder = cardHolder;
+		this.pin = pin;
+		this.cardHolderName = cardHolderName;
+		this.accountBalance = accountBalance;
 	}
 
 	@Override
 	public boolean processPayment(double amount) {
 		if (!validatePayment()) return false;
-		return amount > 0;
+		if (amount <= 0) return false;
+		if (accountBalance < amount) return false;
+		accountBalance -= amount;
+		return true;
 	}
 
 	@Override
 	public boolean validatePayment() {
-		return cardNumber != null && cardNumber.replaceAll("\\s+", "").length() >= 12;
+		if (cardNumber == null || cardNumber.trim().length() < 13) return false;
+		if (pin == null || pin.trim().length() < 4) return false;
+		if (cardHolderName == null || cardHolderName.trim().isEmpty()) return false;
+		return true;
 	}
 
 	@Override
 	public String getPaymentDetails() {
-		return "DebitCard(holder=" + cardHolder + ", ****" + (cardNumber.length() > 4 ? cardNumber.substring(cardNumber.length()-4) : cardNumber) + ")";
+		String masked = "**** **** **** " + cardNumber.substring(cardNumber.length() - 4);
+		return "DebitCard{holder='" + cardHolderName + "', card=" + masked +
+				", balance=" + accountBalance + "}";
 	}
-}
 
+	public String getCardNumber()     { return cardNumber; }
+	public String getCardHolderName() { return cardHolderName; }
+	public double getAccountBalance() { return accountBalance; }
+}

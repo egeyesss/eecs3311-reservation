@@ -1,19 +1,18 @@
 package ca.yorku.eecs3311.model.payment;
 
-/**
- * Charges a departmental/institutional account.
- */
 public class InstitutionalAccountPayment implements PaymentStrategy {
 
 	private final InstitutionalAccount account;
 
 	public InstitutionalAccountPayment(InstitutionalAccount account) {
+		if (account == null) throw new IllegalArgumentException("InstitutionalAccount cannot be null.");
 		this.account = account;
 	}
 
 	@Override
 	public boolean processPayment(double amount) {
 		if (!validatePayment()) return false;
+		if (amount <= 0) return false;
 		return account.deductAmount(amount);
 	}
 
@@ -24,7 +23,10 @@ public class InstitutionalAccountPayment implements PaymentStrategy {
 
 	@Override
 	public String getPaymentDetails() {
-		return "InstitutionalAccount(id=" + account.getAccountID() + ", dept=" + account.getDepartment() + ")";
+		return "InstitutionalAccount{accountID='" + account.getAccountID() +
+				"', department='" + account.getDepartment() +
+				"', balance=" + account.getBalance() + "}";
 	}
-}
 
+	public InstitutionalAccount getAccount() { return account; }
+}
