@@ -23,18 +23,48 @@ public class Booking {
 	private double totalCost;
 	private double depositPaid;
 
+	// New booking constructor
 	public Booking(User user, Equipment equipment, LocalDateTime startTime, LocalDateTime endTime) {
-		this.bookingID = UUID.randomUUID().toString();
-		this.user = user;
-		this.equipment = equipment;
-		this.startTime = startTime;
-		this.endTime = endTime;
-		this.createdAt = LocalDateTime.now();
-		this.duration = Duration.between(startTime, endTime);
-		this.status = BookingStatus.PENDING;
-		this.state = new PendingState(this);
-		this.totalCost = calculateCost();
+		this.bookingID   = UUID.randomUUID().toString();
+		this.user        = user;
+		this.equipment   = equipment;
+		this.startTime   = startTime;
+		this.endTime     = endTime;
+		this.createdAt   = LocalDateTime.now();
+		this.duration    = Duration.between(startTime, endTime);
+		this.status      = BookingStatus.PENDING;
+		this.state       = new PendingState(this);
+		this.totalCost   = calculateCost();
 		this.depositPaid = 0.0;
+	}
+
+	// CSV constructor — used by BookingDAO to restore persisted bookings
+	public Booking(String bookingID, User user, Equipment equipment,
+				   LocalDateTime startTime, LocalDateTime endTime,
+				   LocalDateTime createdAt, LocalDateTime arrivedAt,
+				   BookingStatus status, double totalCost, double depositPaid) {
+		this.bookingID   = bookingID;
+		this.user        = user;
+		this.equipment   = equipment;
+		this.startTime   = startTime;
+		this.endTime     = endTime;
+		this.createdAt   = createdAt;
+		this.arrivedAt   = arrivedAt;
+		this.duration    = Duration.between(startTime, endTime);
+		this.status      = status;
+		this.totalCost   = totalCost;
+		this.depositPaid = depositPaid;
+		this.state       = restoreState(status);
+	}
+
+	private BookingState restoreState(BookingStatus status) {
+		switch (status) {
+			case CONFIRMED: return new ConfirmedState(this);
+			case ACTIVE:    return new ActiveState(this);
+			case COMPLETED: return new CompletedState(this);
+			case CANCELLED: return new CancelledState(this);
+			default:        return new PendingState(this);
+		}
 	}
 
 	public double calculateCost() {
@@ -53,7 +83,6 @@ public class Booking {
 		}
 	}
 
-	// Delegate to state
 	public void confirm()  { state.confirm(); }
 	public void cancel()   { state.cancel(); }
 	public void activate() { state.activate(); }
@@ -65,28 +94,26 @@ public class Booking {
 		this.totalCost = calculateCost();
 	}
 
-	// Package-private: used only by state classes
 	void setEndTime(LocalDateTime newEnd) {
 		this.endTime = newEnd;
 		this.duration = Duration.between(startTime, endTime);
 	}
 
-	// Getters
-	public String getBookingID()          { return bookingID; }
-	public User getUser()                  { return user; }
-	public Equipment getEquipment()        { return equipment; }
-	public LocalDateTime getStartTime()    { return startTime; }
-	public LocalDateTime getEndTime()      { return endTime; }
-	public LocalDateTime getCreatedAt()    { return createdAt; }
-	public LocalDateTime getArrivedAt()    { return arrivedAt; }
-	public Duration getDuration()          { return duration; }
-	public BookingStatus getStatus()       { return status; }
-	public BookingState getState()         { return state; }
-	public double getTotalCost()           { return totalCost; }
-	public double getDepositPaid()         { return depositPaid; }
+	public String getBookingID()       { return bookingID; }
+	public User getUser()              { return user; }
+	public Equipment getEquipment()    { return equipment; }
+	public LocalDateTime getStartTime(){ return startTime; }
+	public LocalDateTime getEndTime()  { return endTime; }
+	public LocalDateTime getCreatedAt(){ return createdAt; }
+	public LocalDateTime getArrivedAt(){ return arrivedAt; }
+	public Duration getDuration()      { return duration; }
+	public BookingStatus getStatus()   { return status; }
+	public BookingState getState()     { return state; }
+	public double getTotalCost()       { return totalCost; }
+	public double getDepositPaid()     { return depositPaid; }
 
 	public void setArrivedAt(LocalDateTime arrivedAt) { this.arrivedAt = arrivedAt; }
-	public void setDepositPaid(double depositPaid)     { this.depositPaid = depositPaid; }
+	public void setDepositPaid(double depositPaid)    { this.depositPaid = depositPaid; }
 
 	@Override
 	public String toString() {
