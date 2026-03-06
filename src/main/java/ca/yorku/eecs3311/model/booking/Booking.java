@@ -23,17 +23,18 @@ public class Booking {
 	private double totalCost;
 	private double depositPaid;
 
+	// New booking constructor
 	public Booking(User user, Equipment equipment, LocalDateTime startTime, LocalDateTime endTime) {
-		this.bookingID = UUID.randomUUID().toString();
-		this.user = user;
-		this.equipment = equipment;
-		this.startTime = startTime;
-		this.endTime = endTime;
-		this.createdAt = LocalDateTime.now();
-		this.duration = Duration.between(startTime, endTime);
-		this.status = BookingStatus.PENDING;
-		this.state = new PendingState(this);
-		this.totalCost = calculateCost();
+		this.bookingID   = UUID.randomUUID().toString();
+		this.user        = user;
+		this.equipment   = equipment;
+		this.startTime   = startTime;
+		this.endTime     = endTime;
+		this.createdAt   = LocalDateTime.now();
+		this.duration    = Duration.between(startTime, endTime);
+		this.status      = BookingStatus.PENDING;
+		this.state       = new PendingState(this);
+		this.totalCost   = calculateCost();
 		this.depositPaid = 0.0;
 	}
 
@@ -69,7 +70,6 @@ public class Booking {
 		}
 	}
 
-	// Delegate to state
 	public void confirm()  { state.confirm(); }
 	public void cancel()   { state.cancel(); }
 	public void activate() { state.activate(); }
@@ -81,28 +81,26 @@ public class Booking {
 		this.totalCost = calculateCost();
 	}
 
-	// Package-private: used only by state classes
 	void setEndTime(LocalDateTime newEnd) {
 		this.endTime = newEnd;
 		this.duration = Duration.between(startTime, endTime);
 	}
 
-	// Getters
-	public String getBookingID()          { return bookingID; }
-	public User getUser()                  { return user; }
-	public Equipment getEquipment()        { return equipment; }
-	public LocalDateTime getStartTime()    { return startTime; }
-	public LocalDateTime getEndTime()      { return endTime; }
-	public LocalDateTime getCreatedAt()    { return createdAt; }
-	public LocalDateTime getArrivedAt()    { return arrivedAt; }
-	public Duration getDuration()          { return duration; }
-	public BookingStatus getStatus()       { return status; }
-	public BookingState getState()         { return state; }
-	public double getTotalCost()           { return totalCost; }
-	public double getDepositPaid()         { return depositPaid; }
+	public String getBookingID()       { return bookingID; }
+	public User getUser()              { return user; }
+	public Equipment getEquipment()    { return equipment; }
+	public LocalDateTime getStartTime(){ return startTime; }
+	public LocalDateTime getEndTime()  { return endTime; }
+	public LocalDateTime getCreatedAt(){ return createdAt; }
+	public LocalDateTime getArrivedAt(){ return arrivedAt; }
+	public Duration getDuration()      { return duration; }
+	public BookingStatus getStatus()   { return status; }
+	public BookingState getState()     { return state; }
+	public double getTotalCost()       { return totalCost; }
+	public double getDepositPaid()     { return depositPaid; }
 
 	public void setArrivedAt(LocalDateTime arrivedAt) { this.arrivedAt = arrivedAt; }
-	public void setDepositPaid(double depositPaid)     { this.depositPaid = depositPaid; }
+	public void setDepositPaid(double depositPaid)    { this.depositPaid = depositPaid; }
 
 	@Override
 	public String toString() {

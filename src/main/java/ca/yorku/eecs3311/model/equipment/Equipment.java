@@ -20,9 +20,10 @@ public class Equipment {
 	private List<Sensor> sensors;
 	private String labID;
 
-	public Equipment(String equipmentID, String name, String description, String category, double hourlyRate) {
+	public Equipment(String equipmentID, String name, String description,
+					 String category, double hourlyRate) {
 		this.equipmentID = equipmentID;
-		this.name = name;
+		this.name        = name;
 		this.description = description;
 		this.category = category;
 		this.hourlyRate = hourlyRate;
@@ -35,20 +36,13 @@ public class Equipment {
 		return this.status == EquipmentStatus.AVAILABLE;
 	}
 
-	public void reserve() {
-		this.status = EquipmentStatus.IN_USE;
-	}
+	public void reserve()  { this.status = EquipmentStatus.IN_USE; }
+	public void release()  { this.status = EquipmentStatus.AVAILABLE; }
 
-	public void release() {
-		this.status = EquipmentStatus.AVAILABLE;
-	}
-
-	public void updateStatus(EquipmentStatus status) {
-		this.status = status;
-	}
+	public void updateStatus(EquipmentStatus status) { this.status = status; }
 
 	public List<String> getAvailableTimeSlots() {
-		// Placeholder: real implementation would consult bookings
+		// PLACEHOLDER — replace with BookingDAO query in Phase 6
 		if (!isAvailable()) return Collections.emptyList();
 		List<String> slots = new ArrayList<>();
 		slots.add("09:00-10:00");
@@ -70,9 +64,7 @@ public class Equipment {
 		if (!sensors.contains(sensor)) sensors.add(sensor);
 	}
 
-	public void removeSensor(Sensor sensor) {
-		sensors.remove(sensor);
-	}
+	public void removeSensor(Sensor sensor) { sensors.remove(sensor); }
 
 	// Getters / setters
 	public String getEquipmentID() { return equipmentID; }
@@ -97,4 +89,3 @@ public class Equipment {
 		return "Equipment{" + equipmentID + ", name=" + name + ", status=" + status + "}";
 	}
 }
-
