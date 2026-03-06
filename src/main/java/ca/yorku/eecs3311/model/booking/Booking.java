@@ -38,33 +38,20 @@ public class Booking {
 		this.depositPaid = 0.0;
 	}
 
-	// CSV constructor — used by BookingDAO to restore persisted bookings
-	public Booking(String bookingID, User user, Equipment equipment,
-				   LocalDateTime startTime, LocalDateTime endTime,
-				   LocalDateTime createdAt, LocalDateTime arrivedAt,
-				   BookingStatus status, double totalCost, double depositPaid) {
-		this.bookingID   = bookingID;
-		this.user        = user;
-		this.equipment   = equipment;
-		this.startTime   = startTime;
-		this.endTime     = endTime;
-		this.createdAt   = createdAt;
-		this.arrivedAt   = arrivedAt;
-		this.duration    = Duration.between(startTime, endTime);
-		this.status      = status;
-		this.totalCost   = totalCost;
+	public Booking(String bookingID, User user, Equipment equipment, LocalDateTime startTime, LocalDateTime endTime,
+                  LocalDateTime createdAt, LocalDateTime arrivedAt, BookingStatus status, double totalCost, double depositPaid) {
+		this.bookingID = bookingID;
+		this.user = user;
+		this.equipment = equipment;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.createdAt = createdAt;
+		this.arrivedAt = arrivedAt;
+		this.status = status;
+		this.totalCost = totalCost;
 		this.depositPaid = depositPaid;
-		this.state       = restoreState(status);
-	}
-
-	private BookingState restoreState(BookingStatus status) {
-		switch (status) {
-			case CONFIRMED: return new ConfirmedState(this);
-			case ACTIVE:    return new ActiveState(this);
-			case COMPLETED: return new CompletedState(this);
-			case CANCELLED: return new CancelledState(this);
-			default:        return new PendingState(this);
-		}
+		this.duration = Duration.between(startTime, endTime);
+		this.state = new PendingState(this);
 	}
 
 	public double calculateCost() {

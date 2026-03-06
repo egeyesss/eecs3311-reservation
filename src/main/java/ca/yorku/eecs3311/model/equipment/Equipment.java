@@ -18,18 +18,18 @@ public class Equipment {
 	private String maintenanceNotes;
 	private LocalDateTime lastMaintenanceDate;
 	private List<Sensor> sensors;
-	private String labID;   // ← added for DAO persistence
+	private String labID;
 
 	public Equipment(String equipmentID, String name, String description,
 					 String category, double hourlyRate) {
 		this.equipmentID = equipmentID;
 		this.name        = name;
 		this.description = description;
-		this.category    = category;
-		this.hourlyRate  = hourlyRate;
-		this.status      = EquipmentStatus.AVAILABLE;
-		this.sensors     = new ArrayList<>();
-		this.labID       = "";
+		this.category = category;
+		this.hourlyRate = hourlyRate;
+		this.status = EquipmentStatus.AVAILABLE;
+		this.sensors = new ArrayList<>();
+		this.labID = null;
 	}
 
 	public boolean isAvailable() {
@@ -66,20 +66,23 @@ public class Equipment {
 
 	public void removeSensor(Sensor sensor) { sensors.remove(sensor); }
 
-	public String getEquipmentID()              { return equipmentID; }
-	public String getName()                     { return name; }
-	public String getDescription()              { return description; }
-	public String getCategory()                 { return category; }
-	public EquipmentStatus getStatus()          { return status; }
-	public double getHourlyRate()               { return hourlyRate; }
-	public String getMaintenanceNotes()         { return maintenanceNotes; }
-	public LocalDateTime getLastMaintenanceDate(){ return lastMaintenanceDate; }
-	public List<Sensor> getSensors()            { return Collections.unmodifiableList(sensors); }
-	public String getLabID()                    { return labID; }
+	// Getters / setters
+	public String getEquipmentID() { return equipmentID; }
+	public String getName() { return name; }
+	public String getDescription() { return description; }
+	public String getCategory() { return category; }
+	public EquipmentStatus getStatus() { return status; }
+	public double getHourlyRate() { return hourlyRate; }
+	public String getMaintenanceNotes() { return maintenanceNotes; }
+	public LocalDateTime getLastMaintenanceDate() { return lastMaintenanceDate; }
+	public List<Sensor> getSensors() { return Collections.unmodifiableList(sensors); }
+	public String getLabID() { return labID; }
+	
+	
 
-	public void setMaintenanceNotes(String maintenanceNotes)         { this.maintenanceNotes = maintenanceNotes; }
-	public void setLastMaintenanceDate(LocalDateTime date)           { this.lastMaintenanceDate = date; }
-	public void setLabID(String labID)                               { this.labID = labID; }
+	public void setMaintenanceNotes(String maintenanceNotes) { this.maintenanceNotes = maintenanceNotes; }
+	public void setLastMaintenanceDate(LocalDateTime lastMaintenanceDate) { this.lastMaintenanceDate = lastMaintenanceDate; }
+	public void setLabID(String labID) { this.labID = labID; }
 
 	@Override
 	public String toString() {
