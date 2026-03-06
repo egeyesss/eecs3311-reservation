@@ -37,6 +37,22 @@ public class Booking {
 		this.depositPaid = 0.0;
 	}
 
+	public Booking(String bookingID, User user, Equipment equipment, LocalDateTime startTime, LocalDateTime endTime,
+                  LocalDateTime createdAt, LocalDateTime arrivedAt, BookingStatus status, double totalCost, double depositPaid) {
+		this.bookingID = bookingID;
+		this.user = user;
+		this.equipment = equipment;
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.createdAt = createdAt;
+		this.arrivedAt = arrivedAt;
+		this.status = status;
+		this.totalCost = totalCost;
+		this.depositPaid = depositPaid;
+		this.duration = Duration.between(startTime, endTime);
+		this.state = new PendingState(this);
+	}
+
 	public double calculateCost() {
 		long hours = Math.max(1, duration.toHours());
 		return equipment.getHourlyRate() * hours;

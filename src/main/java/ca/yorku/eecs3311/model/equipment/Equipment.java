@@ -18,6 +18,7 @@ public class Equipment {
 	private String maintenanceNotes;
 	private LocalDateTime lastMaintenanceDate;
 	private List<Sensor> sensors;
+	private String labID;
 
 	public Equipment(String equipmentID, String name, String description, String category, double hourlyRate) {
 		this.equipmentID = equipmentID;
@@ -27,6 +28,7 @@ public class Equipment {
 		this.hourlyRate = hourlyRate;
 		this.status = EquipmentStatus.AVAILABLE;
 		this.sensors = new ArrayList<>();
+		this.labID = null;
 	}
 
 	public boolean isAvailable() {
@@ -82,9 +84,13 @@ public class Equipment {
 	public String getMaintenanceNotes() { return maintenanceNotes; }
 	public LocalDateTime getLastMaintenanceDate() { return lastMaintenanceDate; }
 	public List<Sensor> getSensors() { return Collections.unmodifiableList(sensors); }
+	public String getLabID() { return labID; }
+	
+	
 
 	public void setMaintenanceNotes(String maintenanceNotes) { this.maintenanceNotes = maintenanceNotes; }
 	public void setLastMaintenanceDate(LocalDateTime lastMaintenanceDate) { this.lastMaintenanceDate = lastMaintenanceDate; }
+	public void setLabID(String labID) { this.labID = labID; }
 
 	@Override
 	public String toString() {
