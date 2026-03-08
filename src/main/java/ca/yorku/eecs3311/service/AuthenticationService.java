@@ -6,16 +6,24 @@ import ca.yorku.eecs3311.model.user.SystemAdministrator;
 import ca.yorku.eecs3311.model.user.User;
 import ca.yorku.eecs3311.model.user.UserFactory;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+// some additions made by Ege, shown with "Added" after Gurnoor completed
 public class AuthenticationService {
 
     private static AuthenticationService instance;
     private final UserDAO userDAO;
+    // Added by ege: tracks currently logged-in users by userId as required by context spec
+    private final Map<String, User> activeSessions = new HashMap<>();
 
     private AuthenticationService() {
         this.userDAO = new UserDAO();
     }
 
-    public static AuthenticationService getInstance() {
+    // Added synchronized to prevent a race condition if two threads call getInstance() simultaneously
+    public static synchronized AuthenticationService getInstance() {
         if (instance == null) {
             instance = new AuthenticationService();
         }
@@ -68,7 +76,29 @@ public class AuthenticationService {
             return null;
         }
 
+        // Added by ege: registers user in activeSessions so isLoggedIn() and getActiveUser() work correctly
+        activeSessions.put(user.getUserId(), user);
         return user;
+    }
+
+    // Added by ege: removes the user from active sessions; required by context spec for logout flow
+    public void logout(String userId) {
+        activeSessions.remove(userId);
+    }
+
+    // Added by ege: returns true if the user has an active session; used by controllers before allowing protected actions
+    public boolean isLoggedIn(String userId) {
+        return activeSessions.containsKey(userId);
+    }
+
+    // Added by ege: retrieves the currently logged-in User object by userId; returns null if no active session exists
+    public User getActiveUser(String userId) {
+        return activeSessions.get(userId);
+    }
+
+    // Added by ege: returns an unmodifiable view to prevent external callers from mutating session state directly
+    public Map<String, User> getActiveSessions() {
+        return Collections.unmodifiableMap(activeSessions);
     }
 
     public User registerUser(UserType type,
@@ -138,7 +168,8 @@ public class AuthenticationService {
         );
     }
 
-    public UserDAO getUserDAO() {
+    // Changed from public to package-private so controllers cannot bypass the facade to access the DAO directly
+    UserDAO getUserDAO() {
         return userDAO;
     }
 }

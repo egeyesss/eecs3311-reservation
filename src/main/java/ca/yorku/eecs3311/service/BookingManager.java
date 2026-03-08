@@ -5,12 +5,14 @@ import ca.yorku.eecs3311.dao.EquipmentDAO;
 import ca.yorku.eecs3311.dao.UserDAO;
 import ca.yorku.eecs3311.model.booking.Booking;
 import ca.yorku.eecs3311.model.enums.BookingStatus;
+import ca.yorku.eecs3311.model.enums.EquipmentStatus;
 import ca.yorku.eecs3311.model.equipment.Equipment;
 import ca.yorku.eecs3311.model.user.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+// some additions made by Ege, shown with "Added" after Gurnoor completed
 public class BookingManager {
 
     private static BookingManager instance;
@@ -25,7 +27,8 @@ public class BookingManager {
         this.bookingDAO = new BookingDAO(userDAO, equipmentDAO);
     }
 
-    public static BookingManager getInstance() {
+    // Added synchronized to prevent a race condition if two threads call getInstance() simultaneously
+    public static synchronized BookingManager getInstance() {
         if (instance == null) {
             instance = new BookingManager();
         }
@@ -38,7 +41,11 @@ public class BookingManager {
             return false;
         }
 
-        if (!equipment.isAvailable()) {
+        // Fixed: previously called equipment.isAvailable() which returns false for IN_USE, wrongly
+        // blocking all future time slots while any session was active; now only hard-blocks on
+        // UNDER_MAINTENANCE or DISABLED since IN_USE is a transient runtime state, not a scheduling lock
+        EquipmentStatus status = equipment.getStatus();
+        if (status == EquipmentStatus.UNDER_MAINTENANCE || status == EquipmentStatus.DISABLED) {
             return false;
         }
 
@@ -90,6 +97,9 @@ public class BookingManager {
         }
 
         Booking booking = new Booking(user, equipment, start, end);
+        // Added: reserve equipment and persist so subsequent availability checks reflect this booking
+        equipment.reserve();
+        equipmentDAO.save(equipment);
         bookingDAO.save(booking);
         return booking;
     }
@@ -112,6 +122,10 @@ public class BookingManager {
         }
 
         booking.cancel();
+        // Added: release equipment back to AVAILABLE and persist so it becomes bookable again immediately
+        Equipment equipment = booking.getEquipment();
+        equipment.release();
+        equipmentDAO.save(equipment);
         bookingDAO.save(booking);
         return booking;
     }
@@ -154,6 +168,40 @@ public class BookingManager {
         return booking;
     }
 
+    // Added: required by context spec; transitions CONFIRMED → ACTIVE and stamps the arrival timestamp
+    public Booking confirmArrival(String bookingID) {
+        Booking booking = bookingDAO.findById(bookingID);
+        if (booking == null) {
+            throw new IllegalArgumentException("Booking not found.");
+        }
+
+        // Sets arrivedAt before activating so the timestamp reflects actual arrival, not state-change time
+        booking.setArrivedAt(LocalDateTime.now());
+        booking.activate();
+        bookingDAO.save(booking);
+        return booking;
+    }
+
+    // Added: required by context spec; cancels a CONFIRMED no-show and retains the deposit as forfeiture
+    public void enforceArrivalPolicy(String bookingID) {
+        Booking booking = bookingDAO.findById(bookingID);
+        if (booking == null) {
+            throw new IllegalArgumentException("Booking not found.");
+        }
+
+        // Only forfeits if booking is still CONFIRMED, no arrival was recorded, and start time has passed
+        if (booking.getStatus() == BookingStatus.CONFIRMED
+                && booking.getArrivedAt() == null
+                && LocalDateTime.now().isAfter(booking.getStartTime())) {
+            booking.cancel();
+            // depositPaid is intentionally left intact — the forfeited amount stays on the record
+            Equipment equipment = booking.getEquipment();
+            equipment.release();
+            equipmentDAO.save(equipment);
+            bookingDAO.save(booking);
+        }
+    }
+
     public Booking findBookingById(String bookingID) {
         return bookingDAO.findById(bookingID);
     }
@@ -166,15 +214,18 @@ public class BookingManager {
         return bookingDAO.findByEquipmentId(equipmentID);
     }
 
-    public BookingDAO getBookingDAO() {
+    // Changed from public to package-private so controllers cannot bypass the facade to call DAOs directly
+    BookingDAO getBookingDAO() {
         return bookingDAO;
     }
 
-    public EquipmentDAO getEquipmentDAO() {
+    // Changed from public to package-private so controllers cannot bypass the facade to call DAOs directly
+    EquipmentDAO getEquipmentDAO() {
         return equipmentDAO;
     }
 
-    public UserDAO getUserDAO() {
+    // Changed from public to package-private so controllers cannot bypass the facade to call DAOs directly
+    UserDAO getUserDAO() {
         return userDAO;
     }
 }
