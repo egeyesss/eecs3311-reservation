@@ -11,6 +11,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class ManagerDashboardController implements SensorObserver {
     private final BookingFacade facade = new BookingFacade();
 
     @FXML private TableView<Booking> bookingsTable;
+    @FXML private TextField searchEquipmentField;
 
     @FXML
     public void initialize() {
@@ -33,6 +35,13 @@ public class ManagerDashboardController implements SensorObserver {
     }
 
     @FXML
+    public void handleLoadBookings() {
+        String equipId = searchEquipmentField.getText();
+        if (equipId != null && !equipId.trim().isEmpty()) {
+            loadAllBookings(equipId.trim());
+        }
+    }
+
     public void loadAllBookings(String equipmentID) {
         List<Booking> bookings = facade.getBookingsByEquipment(equipmentID);
         if (bookingsTable != null) {

@@ -7,7 +7,9 @@ import ca.yorku.eecs3311.service.BookingFacade;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 
 import java.util.List;
 
@@ -18,15 +20,29 @@ public class AdminDashboardController {
     @FXML private TableView<User> usersTable;
     @FXML private TableView<Booking> bookingsTable;
 
+    // Create Manager Fields
+    @FXML private TextField managerEmailField;
+    @FXML private PasswordField managerPasswordField;
+    @FXML private TextField managerDeptField;
+    @FXML private TextField managerCredField;
+
+    // Booking Search Field
+    @FXML private TextField targetIdField;
+
     @FXML
     public void initialize() {
         // Setup table columns (Phase 8)
     }
 
     @FXML
-    public void handleCreateManager(String email, String password, String department, String credNumber) {
+    public void handleCreateManager() {
+        String email = managerEmailField.getText();
+        String password = managerPasswordField.getText();
+        String department = managerDeptField.getText();
+        String credNumber = managerCredField.getText();
+
         try {
-            facade.registerUser(UserType.MANAGER, email, password, department, credNumber, null, null, null); //
+            facade.registerUser(UserType.MANAGER, email, password, department, credNumber, null, null, null);
             showAlert("Success", "Manager account created successfully.");
             loadAllUsers();
         } catch (Exception e) {
@@ -39,7 +55,6 @@ public class AdminDashboardController {
         User selectedUser = usersTable.getSelectionModel().getSelectedItem();
         if (selectedUser != null) {
             try {
-                // Uses the newly implemented facade method to activate the user
                 facade.approveUser(selectedUser.getUserId());
                 showAlert("Success", "User " + selectedUser.getEmail() + " has been approved.");
                 loadAllUsers(); // Refresh table
@@ -52,7 +67,6 @@ public class AdminDashboardController {
     @FXML
     public void loadAllUsers() {
         try {
-            // Uses the newly implemented facade method
             List<User> allUsers = facade.getAllUsers();
             if (usersTable != null) {
                 usersTable.setItems(FXCollections.observableArrayList(allUsers));
@@ -63,21 +77,18 @@ public class AdminDashboardController {
     }
 
     @FXML
-    public void loadAllBookings(String targetID, boolean isUserID) {
-        // Flexible method to load by User or Equipment based on admin needs
-        try {
-            List<Booking> bookings;
-            if (isUserID) {
-                bookings = facade.getBookingsByUser(targetID);
-            } else {
-                bookings = facade.getBookingsByEquipment(targetID);
+    public void handleLoadBookings() {
+        String targetID = targetIdField.getText();
+        if (targetID != null && !targetID.trim().isEmpty()) {
+            // By default, trying to load as User ID. If no results, trying as Equipment ID.
+            List<Booking> bookings = facade.getBookingsByUser(targetID.trim());
+            if (bookings == null || bookings.isEmpty()) {
+                bookings = facade.getBookingsByEquipment(targetID.trim());
             }
 
             if (bookingsTable != null) {
                 bookingsTable.setItems(FXCollections.observableArrayList(bookings));
             }
-        } catch (Exception e) {
-            showAlert("Error", "Failed to load bookings: " + e.getMessage());
         }
     }
 
