@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="600.0" prefWidth="800.0" spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ca.yorku.eecs3311.controller.ManagerDashboardController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <Label text="Manager Dashboard">
+        <font>
+            <Font name="System Bold" size="24.0" />
+        </font>
+    </Label>
+
+    <Label text="Note: Sensor Alerts will appear automatically as pop-ups if abnormal data is detected." textFill="gray" />
+
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label text="Search Equipment ID:" />
+        <TextField fx:id="searchEquipmentField" promptText="Enter Equipment ID" />
+        <Button mnemonicParsing="false" text="Load Bookings" />
+    </HBox>
+
+    <HBox spacing="10.0">
+        <Button mnemonicParsing="false" onAction="#handleConfirmBooking" text="Confirm Pending Booking" />
+        <Button mnemonicParsing="false" onAction="#handleCancelBooking" text="Cancel Booking" />
+        <Button mnemonicParsing="false" text="Mark Equipment Under Maintenance" style="-fx-text-fill: red;" />
+    </HBox>
+
+    <TableView fx:id="bookingsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn text="Booking ID" />
+            <TableColumn text="User ID" />
+            <TableColumn text="Start Time" />
+            <TableColumn text="End Time" />
+            <TableColumn text="Status" />
+        </columns>
+    </TableView>
+</VBox>
