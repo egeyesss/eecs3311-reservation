@@ -8,6 +8,7 @@ public class CompletedState implements BookingState {
 
 	public CompletedState(Booking booking) {
 		this.booking = booking;
+		this.booking.getEquipment().release();
 	}
 
 	@Override

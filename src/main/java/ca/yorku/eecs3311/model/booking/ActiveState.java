@@ -8,6 +8,7 @@ public class ActiveState implements BookingState {
 
 	public ActiveState(Booking booking) {
 		this.booking = booking;
+		this.booking.getEquipment().reserve();
 	}
 
 	@Override

@@ -42,6 +42,8 @@
 
     <Button mnemonicParsing="false" onAction="#handleRegister" text="Register" prefWidth="250.0" />
 
-    <Button mnemonicParsing="false" text="Already have an account? Login" style="-fx-background-color: transparent; -fx-text-fill: blue; -fx-underline: true;" />
+    <Label text="Already have an account? Login"
+           onMouseClicked="#handleGoToLogin"
+           style="-fx-cursor: hand; -fx-text-fill: blue; -fx-underline: true;" />
 
 </VBox>

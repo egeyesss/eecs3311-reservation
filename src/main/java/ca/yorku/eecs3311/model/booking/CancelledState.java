@@ -8,6 +8,7 @@ public class CancelledState implements BookingState {
 
 	public CancelledState(Booking booking) {
 		this.booking = booking;
+		this.booking.getEquipment().release();
 	}
 
 	@Override

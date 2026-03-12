@@ -12,20 +12,23 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.Region?>
 
 <VBox prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ca.yorku.eecs3311.controller.AdminDashboardController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <Label text="System Administrator Dashboard">
-        <font>
-            <Font name="System Bold" size="24.0" />
-        </font>
-        <VBox.margin>
-            <Insets bottom="15.0" />
-        </VBox.margin>
-    </Label>
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label text="System Administrator Dashboard">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+        </Label>
+        <Region HBox.hgrow="ALWAYS" />
+        <Button mnemonicParsing="false" onAction="#handleLogout" text="Logout"
+                style="-fx-background-color: #6c757d; -fx-text-fill: white;" />
+    </HBox>
 
     <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
         <tabs>
@@ -40,10 +43,10 @@
                     </HBox>
                     <TableView fx:id="usersTable" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn text="User ID" />
-                            <TableColumn text="Email" />
-                            <TableColumn text="User Type" />
-                            <TableColumn text="Account Status" />
+                            <TableColumn fx:id="userIdCol" text="User ID" resizable="true"/>
+                            <TableColumn fx:id="emailCol" text="Email" />
+                            <TableColumn fx:id="userTypeCol" text="User Type" />
+                            <TableColumn fx:id="statusCol" text="Account Status" />
                         </columns>
                     </TableView>
                 </VBox>
@@ -56,15 +59,17 @@
                     </padding>
                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                         <Label text="Target ID:" />
-                        <TextField promptText="User or Equipment ID" />
-                        <Button mnemonicParsing="false" text="Load Bookings" />
+                        <TextField fx:id="targetIdField" promptText="User or Equipment ID" />
+                        <Button mnemonicParsing="false" onAction="#handleLoadBookings" text="Load Bookings" />
                     </HBox>
                     <TableView fx:id="bookingsTable" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn text="Booking ID" />
-                            <TableColumn text="User / Equipment" />
-                            <TableColumn text="Status" />
-                        </columns>
+                            <TableColumn fx:id="bookingIdCol" text="Booking ID" />
+                            <TableColumn fx:id="targetCol" text="User ID" />
+                            <TableColumn fx:id="bookingEquipCol" text="Equipment" />
+                            <TableColumn fx:id="bookingStatusCol" text="Status" />
+                            <TableColumn fx:id="bookingStartCol" text="Start Time" />
+                            <TableColumn fx:id="bookingEndCol" text="End Time" /> </columns>
                     </TableView>
                 </VBox>
             </Tab>
@@ -74,28 +79,28 @@
                     <padding>
                         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                     </padding>
-                    <Label text="Register New Manager Account" font="$x1">
+                    <Label text="Register New Manager Account">
                         <font>
                             <Font name="System Bold" size="16.0" />
                         </font>
                     </Label>
                     <VBox spacing="5.0" maxWidth="300.0">
                         <Label text="Email:" />
-                        <TextField promptText="Manager Email" />
+                        <TextField fx:id="managerEmailField" promptText="Manager Email" />
                     </VBox>
                     <VBox spacing="5.0" maxWidth="300.0">
                         <Label text="Password:" />
-                        <PasswordField promptText="Secure Password" />
+                        <PasswordField fx:id="managerPasswordField" promptText="Secure Password" />
                     </VBox>
                     <VBox spacing="5.0" maxWidth="300.0">
                         <Label text="Department:" />
-                        <TextField promptText="Department Name" />
+                        <TextField fx:id="managerDeptField" promptText="Department Name" />
                     </VBox>
                     <VBox spacing="5.0" maxWidth="300.0">
                         <Label text="Credential Number:" />
-                        <TextField promptText="Staff Credential ID" />
+                        <TextField fx:id="managerCredField" promptText="Staff Credential ID" />
                     </VBox>
-                    <Button mnemonicParsing="false" text="Create Manager" />
+                    <Button mnemonicParsing="false" onAction="#handleCreateManager" text="Create Manager" />
                 </VBox>
             </Tab>
         </tabs>
