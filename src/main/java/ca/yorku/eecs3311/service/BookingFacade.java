@@ -1,6 +1,7 @@
 package ca.yorku.eecs3311.service;
 
 import ca.yorku.eecs3311.model.booking.Booking;
+import ca.yorku.eecs3311.model.enums.EquipmentStatus;
 import ca.yorku.eecs3311.model.enums.UserType;
 import ca.yorku.eecs3311.model.equipment.Equipment;
 import ca.yorku.eecs3311.model.payment.PaymentService;
@@ -11,7 +12,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// some additions made by Ege, shown with "Added" after Gurnoor completed
 public class BookingFacade {
 
     private final BookingManager bookingManager;
@@ -54,6 +54,27 @@ public class BookingFacade {
     // Added: auth delegate so controllers can check session status without touching AuthenticationService
     public boolean isLoggedIn(String userId) {
         return authService.isLoggedIn(userId);
+    }
+
+    // ------------------------------------------
+    // Admin / Manager User Operations
+    // --------------------
+
+    // Added: allows admins to approve/activate a pending user account
+    public void approveUser(String userId) {
+        User user = bookingManager.getUserDAO().findById(userId);
+        if (user != null) {
+            user.activate();
+            bookingManager.getUserDAO().save(user);
+            notificationService.sendApprovalNotification(user);
+        } else {
+            throw new IllegalArgumentException("User not found.");
+        }
+    }
+
+    // Added: allows admins to view all users in the system
+    public List<User> getAllUsers() {
+        return bookingManager.getUserDAO().loadAll();
     }
 
     // ------------------------------------------
@@ -138,8 +159,14 @@ public class BookingFacade {
     }
 
     // ----------------------------------------
-    // Equipment queries
+    // Equipment queries & operations
     // -----------------
+
+
+    // Added: allows managers to fetch all equipment to register as sensor observers
+    public List<Equipment> getAllEquipment() {
+        return bookingManager.getEquipmentDAO().loadAll();
+    }
 
     // Added: required by context spec; returns all equipment whose status is AVAILABLE
     public List<Equipment> getAvailableEquipment() {
@@ -151,6 +178,19 @@ public class BookingFacade {
 
     public boolean isEquipmentAvailable(String equipmentID, LocalDateTime start, LocalDateTime end) {
         return bookingManager.isEquipmentAvailable(equipmentID, start, end);
+    }
+
+    // Added: allows managers to update equipment status directly (e.g., for maintenance alerts)
+    public void updateEquipmentStatus(String equipmentID, EquipmentStatus status) {
+        Equipment equipment = bookingManager.getEquipmentDAO().findById(equipmentID);
+        if (equipment != null) {
+            bookingManager.getEquipmentDAO().updateStatus(equipmentID, status);
+            if (status == EquipmentStatus.UNDER_MAINTENANCE) {
+                notificationService.sendMaintenanceAlert(equipment);
+            }
+        } else {
+            throw new IllegalArgumentException("Equipment not found.");
+        }
     }
 
     // --------------------------------------
