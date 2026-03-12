@@ -3,11 +3,19 @@ package ca.yorku.eecs3311.controller;
 import ca.yorku.eecs3311.model.enums.UserType;
 import ca.yorku.eecs3311.model.user.User;
 import ca.yorku.eecs3311.service.BookingFacade;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ComboBox;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class LoginController {
 
@@ -27,14 +35,24 @@ public class LoginController {
     @FXML
     public void initialize() {
         if (regTypeComboBox != null) {
-            regTypeComboBox.getItems().addAll(UserType.values());
+            // Req 2: Filter out ADMIN and MANAGER from public registration.
+            regTypeComboBox.getItems().setAll(
+                    Arrays.stream(UserType.values())
+                            .filter(type -> type != UserType.ADMIN && type != UserType.MANAGER)
+                            .collect(Collectors.toList())
+            );
         }
     }
 
     @FXML
-    public void handleLogin() {
+    public void handleLogin() { // <--- JavaFX looks for exactly this
         String email = loginEmailField.getText();
         String password = loginPasswordField.getText();
+
+        if (email.isEmpty() || password.isEmpty()) {
+            showAlert("Input Error", "Please enter both email and password.");
+            return;
+        }
 
         try {
             loggedInUser = facade.login(email, password);
@@ -44,47 +62,95 @@ public class LoginController {
                 showAlert("Login Failed", "Invalid credentials.");
             }
         } catch (Exception e) {
-            showAlert("Error", e.getMessage());
+            showAlert("Error", "Login Error: " + e.getMessage());
         }
     }
 
     @FXML
     public void handleRegister() {
         try {
-            UserType type = regTypeComboBox.getValue();
+            UserType selectedType = regTypeComboBox.getValue();
             String email = regEmailField.getText();
             String password = regPasswordField.getText();
             String dept = regDeptField.getText();
 
-            // Assuming basic registration without extra credentials for this demo
-            facade.registerUser(type, email, password, dept, null, null, null, null);
-            showAlert("Success", "Registration successful. Please log in.");
+            if (selectedType == null) {
+                showAlert("Input Error", "Please select a User Type.");
+                return;
+            }
+
+            // Req 1: Strong Password Regex
+            String regex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$";
+            if (!password.matches(regex)) {
+                showAlert("Weak Password", "Password must be 8+ chars with Upper, Lower, Number, and Symbol.");
+                return;
+            }
+
+            facade.registerUser(selectedType, email, password, dept, null, null, null, null);
+            showAlert("Success", "Registration successful. Returning to login.");
+            handleGoToLogin();
         } catch (Exception e) {
             showAlert("Registration Failed", e.getMessage());
         }
     }
 
     @FXML
-    public void handleLogout() {
-        if (loggedInUser != null) {
-            facade.logout(loggedInUser.getUserId());
-            loggedInUser = null;
-            // TODO: Navigate back to login view
-            System.out.println("Logged out successfully.");
+    public void handleGoToRegister() {
+        switchScene("/view/register.fxml", loginEmailField);
+    }
+
+    @FXML
+    public void handleGoToLogin() {
+        // Use regEmailField because we are on the register page
+        switchScene("/view/login.fxml", regEmailField);
+    }
+
+    private void switchScene(String fxmlPath, TextField anchorField) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+            Stage stage = (Stage) anchorField.getScene().getWindow();
+            Scene scene = new Scene(root, 900, 650);
+            if (getClass().getResource("/styles/app.css") != null) {
+                scene.getStylesheets().add(getClass().getResource("/styles/app.css").toExternalForm());
+            }
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     private void navigateBasedOnUserType(UserType type) {
-        System.out.println("Navigating to dashboard for: " + type);
-        // TODO: Load respective FXML files (Phase 8)
-        // ADMIN -> admin_dashboard.fxml
-        // MANAGER -> manager_dashboard.fxml
-        // Else -> user_dashboard.fxml
+        String fxmlFile = switch (type) {
+            case ADMIN -> "/view/admin_dashboard.fxml";
+            case MANAGER -> "/view/manager_dashboard.fxml";
+            default -> "/view/user_dashboard.fxml";
+        };
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
+            Parent root = loader.load();
+
+            if (type != UserType.ADMIN && type != UserType.MANAGER) {
+                UserDashboardController controller = loader.getController();
+                controller.setCurrentUserId(loggedInUser.getUserId());
+            }
+
+            Stage stage = (Stage) loginEmailField.getScene().getWindow();
+            Scene scene = new Scene(root, 900, 650);
+            if (getClass().getResource("/styles/app.css") != null) {
+                scene.getStylesheets().add(getClass().getResource("/styles/app.css").toExternalForm());
+            }
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
+        alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
     }

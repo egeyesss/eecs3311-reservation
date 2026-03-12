@@ -33,6 +33,5 @@
 
     <Button mnemonicParsing="false" onAction="#handleLogin" text="Login" prefWidth="250.0" />
 
-    <Button mnemonicParsing="false" text="Don't have an account? Register" style="-fx-background-color: transparent; -fx-text-fill: blue; -fx-underline: true;" />
-
+    <Label text="Don't have an account? Register" onMouseClicked="#handleGoToRegister" style="-fx-cursor: hand; -fx-text-fill: blue;" />
 </VBox>

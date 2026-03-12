@@ -1,7 +1,7 @@
 package ca.yorku.eecs3311.dao;
 
 import ca.yorku.eecs3311.model.booking.Booking;
-import ca.yorku.eecs3311.model.booking.BookingState;
+import ca.yorku.eecs3311.model.booking.*;
 import ca.yorku.eecs3311.model.enums.BookingStatus;
 import ca.yorku.eecs3311.model.equipment.Equipment;
 import ca.yorku.eecs3311.model.user.User;
@@ -143,9 +143,30 @@ public class BookingDAO {
             return null;
         }
 
-        return new Booking(bookingID, user, equipment, start, end,
+        // Initialize booking object
+        Booking b = new Booking(bookingID, user, equipment, start, end,
                 created, arrived, status, totalCost, depositPaid);
-                
+
+        // SYNC STATE PATTERN: Ensure the internal state object matches the persisted status
+        switch (status) {
+            case CONFIRMED:
+                b.setState(new ConfirmedState(b));
+                break;
+            case ACTIVE:
+                b.setState(new ActiveState(b));
+                break;
+            case COMPLETED:
+                b.setState(new CompletedState(b));
+                break;
+            case CANCELLED:
+                b.setState(new CancelledState(b));
+                break;
+            default:
+                // PendingState is usually the default in the Booking constructor
+                break;
+        }
+
+        return b;
     }
 
     private String toRow(Booking b) {
