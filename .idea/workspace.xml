@@ -4,47 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7c16ae6a-095f-49cc-bd4c-4ae07006ee18" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/Launcher.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/controller/AdminDashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/controller/AdminDashboardController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/controller/LoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/controller/LoginController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/controller/ManagerDashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/controller/ManagerDashboardController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/controller/UserDashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/controller/UserDashboardController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/dao/BookingDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/dao/BookingDAO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/model/booking/ActiveState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/model/booking/ActiveState.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/model/booking/CancelledState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/model/booking/CancelledState.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/model/booking/CompletedState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/model/booking/CompletedState.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/model/booking/ConfirmedState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/model/booking/ConfirmedState.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/model/equipment/Equipment.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/model/equipment/Equipment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/service/BookingFacade.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/service/BookingFacade.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/service/BookingManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/service/BookingManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/data/bookings.csv" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/data/bookings.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/data/equipment.csv" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/data/equipment.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/data/labs.csv" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/data/labs.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/data/payments.csv" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/data/payments.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/data/sensors.csv" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/data/sensors.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/data/users.csv" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/data/users.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/styles/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/styles/app.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/view/admin_dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/view/admin_dashboard.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/view/login.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/view/login.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/view/manager_dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/view/manager_dashboard.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/view/register.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/view/register.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/view/user_dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/view/user_dashboard.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/data/bookings.csv" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/data/bookings.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/data/equipment.csv" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/data/equipment.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/data/labs.csv" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/data/labs.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/data/payments.csv" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/data/payments.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/data/sensors.csv" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/data/sensors.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/data/users.csv" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/data/users.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/styles/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/styles/app.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/view/admin_dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/view/admin_dashboard.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/view/login.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/view/login.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/view/manager_dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/view/manager_dashboard.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/view/register.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/view/register.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/view/user_dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/view/user_dashboard.fxml" afterDir="false" />
-    </list>
+    <list default="true" id="7c16ae6a-095f-49cc-bd4c-4ae07006ee18" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
