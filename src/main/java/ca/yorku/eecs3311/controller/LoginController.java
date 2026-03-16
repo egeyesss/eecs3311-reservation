@@ -5,13 +5,11 @@ import ca.yorku.eecs3311.model.user.User;
 import ca.yorku.eecs3311.service.BookingFacade;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.*;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Arrays;
@@ -31,16 +29,51 @@ public class LoginController {
     @FXML private PasswordField regPasswordField;
     @FXML private TextField regDeptField;
     @FXML private ComboBox<UserType> regTypeComboBox;
+    // new register fields for req 8
+    @FXML private VBox regCredContainer;
+    @FXML private Label regCredLabel;
+    @FXML private TextField regCredField;
 
     @FXML
     public void initialize() {
         if (regTypeComboBox != null) {
-            // Req 2: Filter out ADMIN and MANAGER from public registration.
             regTypeComboBox.getItems().setAll(
                     Arrays.stream(UserType.values())
                             .filter(type -> type != UserType.ADMIN && type != UserType.MANAGER)
                             .collect(Collectors.toList())
             );
+
+            // req 8: Dynamic UI Listener
+            regTypeComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal == null) return;
+
+                // Show the container by default for most roles
+                regCredContainer.setVisible(true);
+                regCredContainer.setManaged(true);
+
+                switch (newVal) {
+                    case STUDENT:
+                        regCredLabel.setText("Student ID:");
+                        regCredField.setPromptText("E.g., 210000000");
+                        break;
+                    case FACULTY:
+                        regCredLabel.setText("Staff ID:");
+                        regCredField.setPromptText("E.g., FAC-1234");
+                        break;
+                    case RESEARCHER:
+                        regCredLabel.setText("Certification Number:");
+                        regCredField.setPromptText("E.g., RES-9999");
+                        break;
+                    case GUEST:
+                        // Guests won't need an ID so we hide the field
+                        regCredContainer.setVisible(false);
+                        regCredContainer.setManaged(false);
+                        regCredField.clear();
+                        break;
+                    default:
+                        break;
+                }
+            });
         }
     }
 
@@ -82,22 +115,27 @@ public class LoginController {
                 return;
             }
 
-            // Req 1: Strong Password Regex
+            // req 8: Validate the dynamic credential field
+            String cred = regCredContainer.isVisible() ? regCredField.getText() : null;
+            if (regCredContainer.isVisible() && (cred == null || cred.trim().isEmpty())) {
+                showAlert("Input Error", "Please provide your " + regCredLabel.getText().replace(":", ""));
+                return;
+            }
+
             String regex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$";
             if (!password.matches(regex)) {
                 showAlert("Weak Password", "Password must be 8+ chars with Upper, Lower, Number, and Symbol.");
                 return;
             }
 
-            facade.registerUser(selectedType, email, password, dept, null, null, null, null);
+            // Pass the dynamic 'cred' variable into the facade instead of null
+            facade.registerUser(selectedType, email, password, dept, cred, null, null, null);
 
-            // Req 1: Branching UI Feedback based on UserType
             if (selectedType == UserType.FACULTY || selectedType == UserType.RESEARCHER) {
                 showAlert("Request Sent", "University-affiliated account request sent.\nWaiting for administrator approval.");
             } else {
                 showAlert("Success", "Registration successful. Returning to login.");
             }
-
             handleGoToLogin();
         } catch (Exception e) {
             showAlert("Registration Failed", e.getMessage());

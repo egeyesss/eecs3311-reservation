@@ -43,10 +43,11 @@
                     </HBox>
                     <TableView fx:id="usersTable" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn fx:id="userIdCol" text="User ID" resizable="true"/>
+                            <TableColumn fx:id="userIdCol" text="User ID" />
                             <TableColumn fx:id="emailCol" text="Email" />
-                            <TableColumn fx:id="userTypeCol" text="User Type" />
-                            <TableColumn fx:id="statusCol" text="Account Status" />
+                            <TableColumn fx:id="userTypeCol" text="Role" />
+                            <TableColumn fx:id="credCol" text="Credential ID" />
+                            <TableColumn fx:id="statusCol" text="Status" />
                         </columns>
                     </TableView>
                 </VBox>

@@ -40,6 +40,11 @@
         <TextField fx:id="regDeptField" promptText="E.g., EECS" />
     </VBox>
 
+    <VBox fx:id="regCredContainer" spacing="5.0" maxWidth="250.0" visible="false" managed="false">
+        <Label fx:id="regCredLabel" text="ID:" />
+        <TextField fx:id="regCredField" promptText="Enter ID" />
+    </VBox>
+
     <Button mnemonicParsing="false" onAction="#handleRegister" text="Register" prefWidth="250.0" />
 
     <Label text="Already have an account? Login"
