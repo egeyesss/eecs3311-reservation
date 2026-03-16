@@ -27,6 +27,7 @@ public class AdminDashboardController {
     @FXML private TableColumn<User, String> emailCol;
     @FXML private TableColumn<User, String> userTypeCol;
     @FXML private TableColumn<User, String> statusCol;
+    @FXML private TableColumn<User, String> credCol;
 
     // Booking Oversight Fields
     @FXML private TableView<Booking> bookingsTable;
@@ -52,6 +53,7 @@ public class AdminDashboardController {
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
         userTypeCol.setCellValueFactory(new PropertyValueFactory<>("userType"));
         statusCol.setCellValueFactory(new PropertyValueFactory<>("accountStatus"));
+        credCol.setCellValueFactory(new PropertyValueFactory<>("credentialNumber"));
 
         // --- Booking Table Mapping ---
         bookingIdCol.setCellValueFactory(new PropertyValueFactory<>("bookingID"));
