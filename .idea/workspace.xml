@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7c16ae6a-095f-49cc-bd4c-4ae07006ee18" name="Changes" comment="" />
+    <list default="true" id="7c16ae6a-095f-49cc-bd4c-4ae07006ee18" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/controller/LoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/controller/LoginController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/service/BookingFacade.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ca/yorku/eecs3311/service/BookingFacade.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,7 +43,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "egeyesss/phase9",
+    "git-widget-placeholder": "egeyesss/req1-ref",
     "kotlin-language-version-configured": "true"
   }
 }]]></component>

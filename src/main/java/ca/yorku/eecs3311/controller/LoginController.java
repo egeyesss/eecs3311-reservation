@@ -45,7 +45,7 @@ public class LoginController {
     }
 
     @FXML
-    public void handleLogin() { // <--- JavaFX looks for exactly this
+    public void handleLogin() {
         String email = loginEmailField.getText();
         String password = loginPasswordField.getText();
 
@@ -61,6 +61,9 @@ public class LoginController {
             } else {
                 showAlert("Login Failed", "Invalid credentials.");
             }
+        } catch (IllegalStateException e) {
+            // This catches the specific PENDING account block from AuthenticationService
+            showAlert("Account Pending", e.getMessage());
         } catch (Exception e) {
             showAlert("Error", "Login Error: " + e.getMessage());
         }
@@ -87,7 +90,14 @@ public class LoginController {
             }
 
             facade.registerUser(selectedType, email, password, dept, null, null, null, null);
-            showAlert("Success", "Registration successful. Returning to login.");
+
+            // Req 1: Branching UI Feedback based on UserType
+            if (selectedType == UserType.FACULTY || selectedType == UserType.RESEARCHER) {
+                showAlert("Request Sent", "University-affiliated account request sent.\nWaiting for administrator approval.");
+            } else {
+                showAlert("Success", "Registration successful. Returning to login.");
+            }
+
             handleGoToLogin();
         } catch (Exception e) {
             showAlert("Registration Failed", e.getMessage());

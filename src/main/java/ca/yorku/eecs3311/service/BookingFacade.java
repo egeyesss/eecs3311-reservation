@@ -54,13 +54,13 @@ public class BookingFacade {
     // --------------------
 
     public void approveUser(String userId) {
+        // Call to AuthenticationService to handle state change and CSV upsert instead
+        authService.approveUser(userId);
+
+        // Fetch the updated user to trigger a notification
         User user = bookingManager.getUserDAO().findById(userId);
         if (user != null) {
-            user.activate();
-            bookingManager.getUserDAO().save(user);
             notificationService.sendApprovalNotification(user);
-        } else {
-            throw new IllegalArgumentException("User not found.");
         }
     }
 
