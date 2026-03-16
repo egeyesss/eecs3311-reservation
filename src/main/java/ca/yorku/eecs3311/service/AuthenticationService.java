@@ -1,6 +1,7 @@
 package ca.yorku.eecs3311.service;
 
 import ca.yorku.eecs3311.dao.UserDAO;
+import ca.yorku.eecs3311.model.enums.AccountStatus;
 import ca.yorku.eecs3311.model.enums.UserType;
 import ca.yorku.eecs3311.model.user.SystemAdministrator;
 import ca.yorku.eecs3311.model.user.User;
@@ -10,19 +11,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-// some additions made by Ege, shown with "Added" after Gurnoor completed
 public class AuthenticationService {
 
     private static AuthenticationService instance;
     private final UserDAO userDAO;
-    // Added by ege: tracks currently logged-in users by userId as required by context spec
     private final Map<String, User> activeSessions = new HashMap<>();
 
     private AuthenticationService() {
         this.userDAO = new UserDAO();
     }
 
-    // Added synchronized to prevent a race condition if two threads call getInstance() simultaneously
     public static synchronized AuthenticationService getInstance() {
         if (instance == null) {
             instance = new AuthenticationService();
@@ -76,27 +74,27 @@ public class AuthenticationService {
             return null;
         }
 
-        // Added by ege: registers user in activeSessions so isLoggedIn() and getActiveUser() work correctly
+        // Block login if the account has not been approved yet. (AuthGuard)
+        if (user.getAccountStatus() == AccountStatus.PENDING) {
+            throw new IllegalStateException("Your account is awaiting departmental approval. Please try again later.");
+        }
+
         activeSessions.put(user.getUserId(), user);
         return user;
     }
 
-    // Added by ege: removes the user from active sessions; required by context spec for logout flow
     public void logout(String userId) {
         activeSessions.remove(userId);
     }
 
-    // Added by ege: returns true if the user has an active session; used by controllers before allowing protected actions
     public boolean isLoggedIn(String userId) {
         return activeSessions.containsKey(userId);
     }
 
-    // Added by ege: retrieves the currently logged-in User object by userId; returns null if no active session exists
     public User getActiveUser(String userId) {
         return activeSessions.get(userId);
     }
 
-    // Added by ege: returns an unmodifiable view to prevent external callers from mutating session state directly
     public Map<String, User> getActiveSessions() {
         return Collections.unmodifiableMap(activeSessions);
     }
@@ -109,6 +107,11 @@ public class AuthenticationService {
                              String extraField1,
                              String extraField2,
                              String extraField3) {
+
+        // Security Block --> Prevent unauthorized ADMIN creation
+        if (type == UserType.ADMIN) {
+            throw new SecurityException("Security Violation: Cannot publicly register ADMIN accounts.");
+        }
 
         if (!isEmailUnique(email)) {
             throw new IllegalArgumentException("Email already exists.");
@@ -129,8 +132,25 @@ public class AuthenticationService {
                 extraField3
         );
 
+        // Registration branching depending on user type.
+        // Students and Guests are instantly active. Faculty/Researchers remain PENDING.
+        if (type == UserType.STUDENT || type == UserType.GUEST) {
+            user.activate();
+        }
+
         userDAO.save(user);
         return user;
+    }
+
+    // Admin Approval Logic
+    public void approveUser(String userId) {
+        User user = userDAO.findById(userId);
+        if (user != null && user.getAccountStatus() == AccountStatus.PENDING) {
+            user.activate();
+            userDAO.save(user); // Upserts the row in users.csv, persisting the ACTIVE status
+        } else if (user == null) {
+            throw new IllegalArgumentException("User not found.");
+        }
     }
 
     public boolean canCreateManagerAccount(User currentUser) {
@@ -156,19 +176,16 @@ public class AuthenticationService {
             throw new IllegalStateException("Only the head coordinator can create manager accounts.");
         }
 
-        return registerUser(
-                UserType.MANAGER,
-                email,
-                password,
-                department,
-                credentialNumber,
-                null,
-                null,
-                null
+        // Managers are activated immediately upon creation by the Admin from the dashboard
+        User newManager = UserFactory.createUser(
+                UserType.MANAGER, email, password, department, credentialNumber, null, null, null
         );
+        newManager.activate();
+        userDAO.save(newManager);
+
+        return newManager;
     }
 
-    // Changed from public to package-private so controllers cannot bypass the facade to access the DAO directly
     UserDAO getUserDAO() {
         return userDAO;
     }
