@@ -88,4 +88,5 @@ public class Equipment {
 	public String toString() {
 		return "Equipment{" + equipmentID + ", name=" + name + ", status=" + status + "}";
 	}
+
 }

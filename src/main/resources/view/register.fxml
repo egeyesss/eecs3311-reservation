@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ca.yorku.eecs3311.controller.LoginController">
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+    </padding>
+
+    <Label text="Register New Account">
+        <font>
+            <Font name="System Bold" size="18.0" />
+        </font>
+    </Label>
+
+    <VBox spacing="5.0" maxWidth="250.0">
+        <Label text="User Type:" />
+        <ComboBox fx:id="regTypeComboBox" prefWidth="250.0" promptText="Select Role" />
+    </VBox>
+
+    <VBox spacing="5.0" maxWidth="250.0">
+        <Label text="Email:" />
+        <TextField fx:id="regEmailField" promptText="Enter your email" />
+    </VBox>
+
+    <VBox spacing="5.0" maxWidth="250.0">
+        <Label text="Password:" />
+        <PasswordField fx:id="regPasswordField" promptText="Create a password" />
+    </VBox>
+
+    <VBox spacing="5.0" maxWidth="250.0">
+        <Label text="Department:" />
+        <TextField fx:id="regDeptField" promptText="E.g., EECS" />
+    </VBox>
+
+    <VBox fx:id="regCredContainer" spacing="5.0" maxWidth="250.0" visible="false" managed="false">
+        <Label fx:id="regCredLabel" text="ID:" />
+        <TextField fx:id="regCredField" promptText="Enter ID" />
+    </VBox>
+
+    <Button mnemonicParsing="false" onAction="#handleRegister" text="Register" prefWidth="250.0" />
+
+    <Label text="Already have an account? Login"
+           onMouseClicked="#handleGoToLogin"
+           style="-fx-cursor: hand; -fx-text-fill: blue; -fx-underline: true;" />
+
+</VBox>

@@ -1,0 +1,124 @@
+/* ============================================================================
+   YorkU Lab Equipment Reservation - Base Stylesheet
+   ============================================================================ */
+
+/* Global Root Styling */
+.root {
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-background-color: #f8f9fa; /* Clean, light gray background */
+    -fx-font-size: 14px;
+}
+
+/* Default Label */
+.label {
+    -fx-text-fill: #333333;
+}
+
+/* ============================================================================
+   Buttons
+   ============================================================================ */
+.button {
+    -fx-background-color: #e31837; /* YorkU Red */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px 15px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #c1102b; /* Darker red on hover */
+}
+
+.button:pressed {
+    -fx-background-color: #9e0d22;
+}
+
+/* Transparent text buttons (like the login/register toggle) */
+.button:default {
+    -fx-background-color: transparent;
+    -fx-text-fill: #0056b3;
+}
+
+/* ============================================================================
+   Text Fields, Password Fields, and Combo Boxes
+   ============================================================================ */
+.text-field, .password-field, .combo-box {
+    -fx-background-color: white;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 6px;
+}
+
+.text-field:focused, .password-field:focused, .combo-box:focused {
+    -fx-border-color: #e31837; /* Highlight border with YorkU Red */
+    -fx-background-color: #ffffff;
+}
+
+/* ============================================================================
+   TabPane Styling
+   ============================================================================ */
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: #e9ecef;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #dee2e6;
+    -fx-background-radius: 4px 4px 0 0;
+    -fx-padding: 5px 20px;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: white;
+    -fx-border-color: #cccccc #cccccc white #cccccc;
+    -fx-border-width: 1 1 0 1;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-text-fill: #495057;
+    -fx-font-weight: bold;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #e31837; /* Active tab text is YorkU Red */
+}
+
+/* ============================================================================
+   TableView Styling
+   ============================================================================ */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #dddddd;
+    -fx-border-radius: 4px;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f1f3f5;
+    -fx-border-color: transparent transparent #cccccc transparent;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: transparent;
+    -fx-size: 35px;
+    -fx-border-width: 0 1 0 0;
+    -fx-border-color: #e9ecef;
+}
+
+.table-view .column-header .label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+}
+
+.table-row-cell {
+    -fx-cell-size: 30px;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f8f9fa; /* Striped rows */
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #e31837;
+    -fx-text-fill: white;
+}
