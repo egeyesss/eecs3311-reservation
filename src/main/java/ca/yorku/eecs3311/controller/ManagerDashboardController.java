@@ -183,4 +183,27 @@ public class ManagerDashboardController implements SensorObserver {
         alert.setContentText(content);
         alert.showAndWait();
     }
+
+    @FXML
+    public void handleViewReceipt() {
+        Booking selected = bookingsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Selection Error", "Please select a booking to view its receipt.");
+            return;
+        }
+
+        ca.yorku.eecs3311.model.payment.Payment receipt = facade.getPaymentReceipt(selected.getBookingID());
+
+        if (receipt == null) {
+            showAlert("No Receipt", "No payment has been recorded for Booking ID:\n" + selected.getBookingID() +
+                    "\n\nStatus: UNPAID");
+        } else {
+            showAlert("Payment Receipt",
+                    "Transaction ID: " + receipt.getTransactionID() + "\n" +
+                            "Date: " + receipt.getPaymentDate().toLocalDate() + "\n" +
+                            "Method: " + receipt.getPaymentMethod() + "\n" +
+                            "Amount Paid: $" + String.format("%.2f", receipt.getAmount()) + "\n" +
+                            "Status: " + receipt.getStatus());
+        }
+    }
 }

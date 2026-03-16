@@ -5,6 +5,7 @@ import ca.yorku.eecs3311.model.user.User;
 import ca.yorku.eecs3311.service.BookingFacade;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -144,5 +145,28 @@ public class AdminDashboardController {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    @FXML
+    public void handleViewReceipt() {
+        Booking selected = bookingsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Selection Error", "Please select a booking to view its receipt.");
+            return;
+        }
+
+        ca.yorku.eecs3311.model.payment.Payment receipt = facade.getPaymentReceipt(selected.getBookingID());
+
+        if (receipt == null) {
+            showAlert("No Receipt", "No payment has been recorded for Booking ID:\n" + selected.getBookingID() +
+                    "\n\nStatus: UNPAID");
+        } else {
+            showAlert("Payment Receipt",
+                    "Transaction ID: " + receipt.getTransactionID() + "\n" +
+                            "Date: " + receipt.getPaymentDate().toLocalDate() + "\n" +
+                            "Method: " + receipt.getPaymentMethod() + "\n" +
+                            "Amount Paid: $" + String.format("%.2f", receipt.getAmount()) + "\n" +
+                            "Status: " + receipt.getStatus());
+        }
     }
 }

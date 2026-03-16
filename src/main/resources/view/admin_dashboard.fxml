@@ -62,6 +62,7 @@
                         <Label text="Target ID:" />
                         <TextField fx:id="targetIdField" promptText="User or Equipment ID" />
                         <Button mnemonicParsing="false" onAction="#handleLoadBookings" text="Load Bookings" />
+                        <Button mnemonicParsing="false" onAction="#handleViewReceipt" text="View Receipt" />
                     </HBox>
                     <TableView fx:id="bookingsTable" VBox.vgrow="ALWAYS">
                         <columns>
