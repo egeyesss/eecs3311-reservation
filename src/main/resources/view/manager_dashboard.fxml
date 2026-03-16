@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox prefHeight="650.0" prefWidth="900.0" spacing="10.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ca.yorku.eecs3311.controller.ManagerDashboardController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label text="Manager Dashboard">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+        </Label>
+        <Region HBox.hgrow="ALWAYS" />
+        <Button mnemonicParsing="false" onAction="#handleLogout" text="Logout"
+                style="-fx-background-color: #6c757d; -fx-text-fill: white;" />
+    </HBox>
+
+    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+        <tabs>
+            <Tab text="Equipment Management">
+                <VBox spacing="10.0">
+                    <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
+                    <HBox spacing="10.0" alignment="CENTER_LEFT">
+                        <Button mnemonicParsing="false" onAction="#loadAllEquipment" text="Refresh Equipment" />
+                        <Button mnemonicParsing="false" onAction="#handleMarkUnderMaintenance" text="Mark Under Maintenance" style="-fx-background-color: #d9534f;" />
+                        <Button mnemonicParsing="false" onAction="#handleMarkAvailable" text="Mark Available (Fixed)" style="-fx-background-color: #5cb85c;" />
+                    </HBox>
+                    <TableView fx:id="equipmentTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="eqIdCol" text="ID" prefWidth="80"/>
+                            <TableColumn fx:id="eqNameCol" text="Name" prefWidth="150"/>
+                            <TableColumn fx:id="eqStatusCol" text="Status" prefWidth="120"/>
+                            <TableColumn fx:id="eqLabCol" text="Lab ID" prefWidth="80"/>
+                            <TableColumn fx:id="eqRateCol" text="Hourly Rate" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+
+            <Tab text="Booking Management">
+                <VBox spacing="10.0">
+                    <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
+                    <HBox spacing="10.0" alignment="CENTER_LEFT">
+                        <Button mnemonicParsing="false" onAction="#loadAllBookings" text="Load All System Bookings" />
+                        <Button mnemonicParsing="false" onAction="#handleConfirmBooking" text="Confirm Pending" />
+                        <Button mnemonicParsing="false" onAction="#handleCancelBooking" text="Cancel Booking" />
+                        <Button mnemonicParsing="false" onAction="#handleViewReceipt" text="View Receipt" />
+                    </HBox>
+                    <TableView fx:id="bookingsTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="mbIdCol" text="Booking ID" />
+                            <TableColumn fx:id="mbUserCol" text="User ID" />
+                            <TableColumn fx:id="mbEquipCol" text="Equipment" />
+                            <TableColumn fx:id="mbStatusCol" text="Status" />
+                            <TableColumn fx:id="mbStartCol" text="Start Time" />
+                            <TableColumn fx:id="mbEndCol" text="End Time" />
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+        </tabs>
+    </TabPane>
+</VBox>

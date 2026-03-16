@@ -1,49 +1,45 @@
 package ca.yorku.eecs3311.service;
 
 import ca.yorku.eecs3311.model.booking.Booking;
+import ca.yorku.eecs3311.model.enums.EquipmentStatus;
 import ca.yorku.eecs3311.model.enums.UserType;
 import ca.yorku.eecs3311.model.equipment.Equipment;
 import ca.yorku.eecs3311.model.payment.PaymentService;
 import ca.yorku.eecs3311.model.payment.PaymentStrategy;
 import ca.yorku.eecs3311.model.user.User;
+import ca.yorku.eecs3311.dao.PaymentDAO;
+import ca.yorku.eecs3311.model.enums.PaymentMethod;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// some additions made by Ege, shown with "Added" after Gurnoor completed
 public class BookingFacade {
 
     private final BookingManager bookingManager;
     private final NotificationService notificationService;
-    // Added: AuthenticationService so controllers go through the facade for auth, never calling it directly
     private final AuthenticationService authService;
-    // Added: PaymentService so processPayment() can be routed through the facade as the sole entry point
     private final PaymentService paymentService;
 
     public BookingFacade() {
         this.bookingManager = BookingManager.getInstance();
         this.notificationService = new NotificationService();
-        // Uses getInstance() so the facade shares the same session state as the rest of the app
         this.authService = AuthenticationService.getInstance();
         this.paymentService = new PaymentService();
     }
 
     // --------------------------
-    // Auth delegates — controllers call these instead of AuthenticationService directly
+    // Auth delegates
     // ---------------
 
-    // Added: auth delegate so LoginController never needs to import or call AuthenticationService itself
     public User login(String email, String password) {
         return authService.login(email, password);
     }
 
-    // Added: auth delegate to keep logout flow inside the facade boundary
     public void logout(String userId) {
         authService.logout(userId);
     }
 
-    // Added: auth delegate so registration is also controlled through a single entry point
     public User registerUser(UserType type, String email, String password, String department,
                              String credentialNumber, String extraField1,
                              String extraField2, String extraField3) {
@@ -51,30 +47,33 @@ public class BookingFacade {
                 credentialNumber, extraField1, extraField2, extraField3);
     }
 
-    // Added: auth delegate so controllers can check session status without touching AuthenticationService
     public boolean isLoggedIn(String userId) {
         return authService.isLoggedIn(userId);
+    }
+
+    // ------------------------------------------
+    // Admin / Manager User Operations
+    // --------------------
+
+    public void approveUser(String userId) {
+        // Call to AuthenticationService to handle state change and CSV upsert instead
+        authService.approveUser(userId);
+
+        // Fetch the updated user to trigger a notification
+        User user = bookingManager.getUserDAO().findById(userId);
+        if (user != null) {
+            notificationService.sendApprovalNotification(user);
+        }
+    }
+
+    public List<User> getAllUsers() {
+        return bookingManager.getUserDAO().loadAll();
     }
 
     // ------------------------------------------
     // Booking operations
     // --------------------
 
-    public Booking createAndConfirmBooking(String userID,
-                                           String equipmentID,
-                                           LocalDateTime start,
-                                           LocalDateTime end) {
-
-        Booking booking = bookingManager.createBooking(userID, equipmentID, start, end);
-        notificationService.notifyBookingCreated(booking.getUser(), booking);
-
-        booking = bookingManager.confirmBooking(booking.getBookingID());
-        notificationService.notifyBookingConfirmed(booking.getUser(), booking);
-
-        return booking;
-    }
-
-    // Added: standalone createBooking so PENDING state is usable for approval workflows before auto-confirm
     public Booking createBooking(String userID, String equipmentID,
                                  LocalDateTime start, LocalDateTime end) {
         Booking booking = bookingManager.createBooking(userID, equipmentID, start, end);
@@ -82,7 +81,10 @@ public class BookingFacade {
         return booking;
     }
 
-    // Added: standalone confirmBooking so a manager/admin can explicitly approve a PENDING booking
+    public Booking completeBooking(String bookingID) {
+        return bookingManager.completeBooking(bookingID);
+    }
+
     public Booking confirmBooking(String bookingID) {
         Booking booking = bookingManager.confirmBooking(bookingID);
         notificationService.notifyBookingConfirmed(booking.getUser(), booking);
@@ -101,7 +103,6 @@ public class BookingFacade {
         return booking;
     }
 
-    // Added: required by context spec; delegates arrival confirmation and sends the arrival reminder
     public Booking confirmArrival(String bookingID) {
         Booking booking = bookingManager.confirmArrival(bookingID);
         notificationService.sendArrivalReminder(booking.getUser(), booking);
@@ -112,36 +113,56 @@ public class BookingFacade {
     // Payment
     // ------------------
 
-    // Added: required by context spec; sets the strategy and executes payment through PaymentService
     public boolean processPayment(String bookingID, PaymentStrategy strategy) {
         Booking booking = bookingManager.findBookingById(bookingID);
         if (booking == null) {
             throw new IllegalArgumentException("Booking not found.");
         }
-        paymentService.setStrategy(strategy);
-        return paymentService.executePayment(booking.getTotalCost());
-    }
 
-    // Added: convenience overload for charging only the deposit and updating depositPaid on the booking
-    public boolean processDeposit(String bookingID, PaymentStrategy strategy, double depositAmount) {
-        Booking booking = bookingManager.findBookingById(bookingID);
-        if (booking == null) {
-            throw new IllegalArgumentException("Booking not found.");
-        }
         paymentService.setStrategy(strategy);
-        boolean success = paymentService.chargeDeposit(depositAmount);
+        boolean success = paymentService.executePayment(booking.getTotalCost());
+
+        // req 10: The Missing Persistence Link
         if (success) {
-            booking.setDepositPaid(depositAmount);
-            bookingManager.getBookingDAO().save(booking);
+            // Map the Strategy to the Enumerations
+            PaymentMethod methodEnum;
+            if (strategy instanceof ca.yorku.eecs3311.model.payment.CreditCardPayment) {
+                methodEnum = PaymentMethod.CREDIT_CARD;
+            } else if (strategy instanceof ca.yorku.eecs3311.model.payment.DebitCardPayment) {
+                methodEnum = PaymentMethod.DEBIT_CARD;
+            } else if (strategy instanceof ca.yorku.eecs3311.model.payment.InstitutionalAccountPayment) {
+                methodEnum = PaymentMethod.INSTITUTIONAL_ACCOUNT;
+            } else {
+                methodEnum = PaymentMethod.RESEARCH_GRANT;
+            }
+
+            // Create the Payment Record (isDeposit = false)
+            ca.yorku.eecs3311.model.payment.Payment paymentRecord =
+                    new ca.yorku.eecs3311.model.payment.Payment(
+                            bookingID,
+                            booking.getUser().getUserId(),
+                            booking.getTotalCost(),
+                            methodEnum,
+                            false
+                    );
+            paymentRecord.setStatus("COMPLETED");
+
+            // Update the CSV
+            PaymentDAO paymentDAO = new PaymentDAO();
+            paymentDAO.save(paymentRecord);
         }
+
         return success;
     }
 
     // ----------------------------------------
-    // Equipment queries
+    // Equipment queries & operations
     // -----------------
 
-    // Added: required by context spec; returns all equipment whose status is AVAILABLE
+    public List<Equipment> getAllEquipment() {
+        return bookingManager.getEquipmentDAO().loadAll();
+    }
+
     public List<Equipment> getAvailableEquipment() {
         return bookingManager.getEquipmentDAO().loadAll()
                 .stream()
@@ -149,16 +170,36 @@ public class BookingFacade {
                 .collect(Collectors.toList());
     }
 
-    public boolean isEquipmentAvailable(String equipmentID, LocalDateTime start, LocalDateTime end) {
-        return bookingManager.isEquipmentAvailable(equipmentID, start, end);
+    public void markEquipmentAvailable(String equipmentID) {
+        Equipment equipment = bookingManager.getEquipmentDAO().findById(equipmentID);
+        if (equipment != null) {
+            bookingManager.getEquipmentDAO().updateStatus(equipmentID, EquipmentStatus.AVAILABLE);
+        } else {
+            throw new IllegalArgumentException("Equipment not found.");
+        }
+    }
+
+    public void updateEquipmentStatus(String equipmentID, EquipmentStatus status) {
+        Equipment equipment = bookingManager.getEquipmentDAO().findById(equipmentID);
+        if (equipment != null) {
+            bookingManager.getEquipmentDAO().updateStatus(equipmentID, status);
+            if (status == EquipmentStatus.UNDER_MAINTENANCE) {
+                notificationService.sendMaintenanceAlert(equipment);
+            }
+        } else {
+            throw new IllegalArgumentException("Equipment not found.");
+        }
     }
 
     // --------------------------------------
     // Query helpers
     // --------------------
 
-    public Booking getBookingById(String bookingID) {
-        return bookingManager.findBookingById(bookingID);
+    /**
+     * Added: Support for the Manager Dashboard's global Booking Management tab.
+     */
+    public List<Booking> getAllBookings() {
+        return bookingManager.getBookingDAO().loadAll();
     }
 
     public List<Booking> getBookingsByUser(String userID) {
@@ -167,5 +208,20 @@ public class BookingFacade {
 
     public List<Booking> getBookingsByEquipment(String equipmentID) {
         return bookingManager.getBookingsByEquipment(equipmentID);
+    }
+
+    public ca.yorku.eecs3311.model.payment.Payment getPaymentReceipt(String bookingID) {
+        ca.yorku.eecs3311.dao.PaymentDAO paymentDAO = new ca.yorku.eecs3311.dao.PaymentDAO();
+
+        // 1. Get the list of payments for this booking
+        java.util.List<ca.yorku.eecs3311.model.payment.Payment> payments = paymentDAO.findByBookingId(bookingID);
+
+        // 2. Check if the list is empty
+        if (payments != null && !payments.isEmpty()) {
+            // 3. Return the most recent payment (the last one in the list)
+            return payments.get(payments.size() - 1);
+        }
+
+        return null; // No payments found
     }
 }
