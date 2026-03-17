@@ -44,6 +44,7 @@
                             <TableColumn fx:id="eqIdCol" text="Equipment ID" />
                             <TableColumn fx:id="eqNameCol" text="Name" />
                             <TableColumn fx:id="eqCatCol" text="Category" />
+                            <TableColumn fx:id="eqLabCol" text="Lab Location" />
                             <TableColumn fx:id="eqRateCol" text="Hourly Rate" />
                         </columns>
                     </TableView>

@@ -200,9 +200,10 @@ public class BookingFacade {
 
         return equipmentList;
     }
-    
+
     public List<Equipment> getAvailableEquipment() {
-        return bookingManager.getEquipmentDAO().loadAll()
+        // calling getAllEquipment() here to use Marwan's Lab-stitching logic,
+        return getAllEquipment()
                 .stream()
                 .filter(Equipment::isAvailable)
                 .collect(Collectors.toList());

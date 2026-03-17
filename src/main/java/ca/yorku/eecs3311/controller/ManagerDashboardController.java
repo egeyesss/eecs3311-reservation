@@ -21,6 +21,17 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Label;
+import javafx.scene.control.ComboBox;
+import javafx.scene.layout.GridPane;
+import javafx.geometry.Insets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -126,24 +137,98 @@ public class ManagerDashboardController implements SensorObserver {
 
     @FXML
     public void handleAddEquipment() {
-    try {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/AddEquipment.fxml"));
-        Parent root = loader.load();
+        // Create a custom dialog in fxml
+        Dialog<Equipment> dialog = new Dialog<>();
+        dialog.setTitle("Add Equipment");
+        dialog.setHeaderText("Enter new equipment details");
 
-        AddEquipmentController controller = loader.getController();
-        controller.setOnSaveCallback(this::loadAllEquipment); // refresh table after save
+        // buttons
+        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
 
-        Stage stage = new Stage();
-        stage.setTitle("Add Equipment");
-        stage.setScene(new Scene(root));
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.showAndWait();
+        // add the grid and fields manually
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
 
-    } catch (IOException e) {
-        e.printStackTrace();
-        showAlert("Error", "Could not open add equipment dialog.");
+        TextField idField = new TextField();
+        idField.setPromptText("Equipment ID");
+        TextField nameField = new TextField();
+        nameField.setPromptText("Name");
+        TextField descField = new TextField();
+        descField.setPromptText("Description");
+        TextField catField = new TextField();
+        catField.setPromptText("Category");
+        TextField rateField = new TextField();
+        rateField.setPromptText("Hourly Rate");
+
+        ComboBox<String> labCombo = new ComboBox<>();
+        labCombo.setPromptText("Select a lab");
+
+        // populating lab dropdown
+        List<Lab> labs = facade.getAllLabs();
+        Map<String, String> labMap = new HashMap<>();
+        for (Lab lab : labs) {
+            labMap.put(lab.getName(), lab.getLabID());
+        }
+        labCombo.setItems(FXCollections.observableArrayList(labMap.keySet()));
+
+        // Add UI elements to the grid
+        grid.add(new Label("Equipment ID:"), 0, 0);
+        grid.add(idField, 1, 0);
+        grid.add(new Label("Name:"), 0, 1);
+        grid.add(nameField, 1, 1);
+        grid.add(new Label("Description:"), 0, 2);
+        grid.add(descField, 1, 2);
+        grid.add(new Label("Category:"), 0, 3);
+        grid.add(catField, 1, 3);
+        grid.add(new Label("Hourly Rate:"), 0, 4);
+        grid.add(rateField, 1, 4);
+        grid.add(new Label("Lab Location:"), 0, 5);
+        grid.add(labCombo, 1, 5);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // Convert the result to an Equipment object when Save is clicked
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                try {
+                    String id = idField.getText().trim();
+                    String name = nameField.getText().trim();
+                    String desc = descField.getText().trim();
+                    String cat = catField.getText().trim();
+                    double rate = Double.parseDouble(rateField.getText().trim());
+                    String selectedLabName = labCombo.getValue();
+
+                    if (id.isEmpty() || name.isEmpty() || selectedLabName == null) {
+                        showAlert("Input Error", "Please fill all required fields and select a lab.");
+                        return null;
+                    }
+
+                    // Create equipment and assign the proper Lab ID
+                    Equipment eq = new Equipment(id, name, desc, cat, rate);
+                    eq.setLabID(labMap.get(selectedLabName));
+                    return eq;
+                } catch (NumberFormatException e) {
+                    showAlert("Invalid rate", "Hourly rate must be a valid number.");
+                }
+            }
+            return null;
+        });
+
+        // Show dbox and the result
+        Optional<Equipment> result = dialog.showAndWait();
+        result.ifPresent(equipment -> {
+            try {
+                facade.saveEquipment(equipment);
+                loadAllEquipment(); // refresh the table
+                showAlert("Success", "Equipment added successfully!");
+            } catch (Exception e) {
+                showAlert("Error", "Failed to save equipment: " + e.getMessage());
+            }
+        });
     }
-}
 
     // -------------------------------------------------------------------------
     // BOOKING TAB LOGIC
