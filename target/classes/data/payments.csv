@@ -1,2 +1,0 @@
-paymentID,bookingID,userId,amount,paymentMethod,paymentDate,transactionID,status,isDeposit
-P1,B1,U3,15.00,CREDIT_CARD,2026-03-10T15:05:00,tx-uuid-123,SUCCESS,false

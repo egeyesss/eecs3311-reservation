@@ -1,2 +1,3 @@
 paymentID,bookingID,userId,amount,paymentMethod,paymentDate,transactionID,status,isDeposit
-P1,B1,U3,15.00,CREDIT_CARD,2026-03-10T15:05:00,tx-uuid-123,SUCCESS,false
+b236c28b-6ad4-4958-a77b-b989834abcd6,B1,U3,15.0,CREDIT_CARD,2026-03-16T16:57:04.235818,tx-uuid-123,SUCCESS,false
+065088d3-1e88-49d9-b155-ee772bcc6459,cec3195d-8a78-402a-8bbe-6b9e40b390be,U3,10.0,CREDIT_CARD,2026-03-16T16:57:04.235468,tx-d47d3b9d-325c-45c5-8907-c64af23b8bc5,COMPLETED,false

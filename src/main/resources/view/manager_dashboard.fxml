@@ -50,6 +50,7 @@
                         <Button mnemonicParsing="false" onAction="#loadAllBookings" text="Load All System Bookings" />
                         <Button mnemonicParsing="false" onAction="#handleConfirmBooking" text="Confirm Pending" />
                         <Button mnemonicParsing="false" onAction="#handleCancelBooking" text="Cancel Booking" />
+                        <Button mnemonicParsing="false" onAction="#handleViewReceipt" text="View Receipt" />
                     </HBox>
                     <TableView fx:id="bookingsTable" VBox.vgrow="ALWAYS">
                         <columns>

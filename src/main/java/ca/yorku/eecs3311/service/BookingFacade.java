@@ -7,6 +7,8 @@ import ca.yorku.eecs3311.model.equipment.Equipment;
 import ca.yorku.eecs3311.model.payment.PaymentService;
 import ca.yorku.eecs3311.model.payment.PaymentStrategy;
 import ca.yorku.eecs3311.model.user.User;
+import ca.yorku.eecs3311.dao.PaymentDAO;
+import ca.yorku.eecs3311.model.enums.PaymentMethod;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -54,13 +56,13 @@ public class BookingFacade {
     // --------------------
 
     public void approveUser(String userId) {
+        // Call to AuthenticationService to handle state change and CSV upsert instead
+        authService.approveUser(userId);
+
+        // Fetch the updated user to trigger a notification
         User user = bookingManager.getUserDAO().findById(userId);
         if (user != null) {
-            user.activate();
-            bookingManager.getUserDAO().save(user);
             notificationService.sendApprovalNotification(user);
-        } else {
-            throw new IllegalArgumentException("User not found.");
         }
     }
 
@@ -116,8 +118,41 @@ public class BookingFacade {
         if (booking == null) {
             throw new IllegalArgumentException("Booking not found.");
         }
+
         paymentService.setStrategy(strategy);
-        return paymentService.executePayment(booking.getTotalCost());
+        boolean success = paymentService.executePayment(booking.getTotalCost());
+
+        // req 10: The Missing Persistence Link
+        if (success) {
+            // Map the Strategy to the Enumerations
+            PaymentMethod methodEnum;
+            if (strategy instanceof ca.yorku.eecs3311.model.payment.CreditCardPayment) {
+                methodEnum = PaymentMethod.CREDIT_CARD;
+            } else if (strategy instanceof ca.yorku.eecs3311.model.payment.DebitCardPayment) {
+                methodEnum = PaymentMethod.DEBIT_CARD;
+            } else if (strategy instanceof ca.yorku.eecs3311.model.payment.InstitutionalAccountPayment) {
+                methodEnum = PaymentMethod.INSTITUTIONAL_ACCOUNT;
+            } else {
+                methodEnum = PaymentMethod.RESEARCH_GRANT;
+            }
+
+            // Create the Payment Record (isDeposit = false)
+            ca.yorku.eecs3311.model.payment.Payment paymentRecord =
+                    new ca.yorku.eecs3311.model.payment.Payment(
+                            bookingID,
+                            booking.getUser().getUserId(),
+                            booking.getTotalCost(),
+                            methodEnum,
+                            false
+                    );
+            paymentRecord.setStatus("COMPLETED");
+
+            // Update the CSV
+            PaymentDAO paymentDAO = new PaymentDAO();
+            paymentDAO.save(paymentRecord);
+        }
+
+        return success;
     }
 
     // ----------------------------------------
@@ -173,5 +208,20 @@ public class BookingFacade {
 
     public List<Booking> getBookingsByEquipment(String equipmentID) {
         return bookingManager.getBookingsByEquipment(equipmentID);
+    }
+
+    public ca.yorku.eecs3311.model.payment.Payment getPaymentReceipt(String bookingID) {
+        ca.yorku.eecs3311.dao.PaymentDAO paymentDAO = new ca.yorku.eecs3311.dao.PaymentDAO();
+
+        // 1. Get the list of payments for this booking
+        java.util.List<ca.yorku.eecs3311.model.payment.Payment> payments = paymentDAO.findByBookingId(bookingID);
+
+        // 2. Check if the list is empty
+        if (payments != null && !payments.isEmpty()) {
+            // 3. Return the most recent payment (the last one in the list)
+            return payments.get(payments.size() - 1);
+        }
+
+        return null; // No payments found
     }
 }

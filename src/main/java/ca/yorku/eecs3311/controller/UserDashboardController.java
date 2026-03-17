@@ -2,11 +2,16 @@ package ca.yorku.eecs3311.controller;
 
 import ca.yorku.eecs3311.model.booking.Booking;
 import ca.yorku.eecs3311.model.equipment.Equipment;
-import ca.yorku.eecs3311.model.payment.CreditCardPayment;
-import ca.yorku.eecs3311.model.payment.PaymentStrategy;
 import ca.yorku.eecs3311.service.BookingFacade;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.ChoiceDialog;
+import java.util.Optional;
+import java.util.ArrayList;
+import ca.yorku.eecs3311.model.enums.UserType;
+import ca.yorku.eecs3311.model.payment.*;
+import ca.yorku.eecs3311.model.user.ResearchGrant;
+import java.time.LocalDate;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Alert;
@@ -161,11 +166,87 @@ public class UserDashboardController {
     @FXML
     public void handlePayment() {
         Booking selected = bookingsTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            PaymentStrategy strategy = new CreditCardPayment("1234567890123456", "12/28", "123", "John Doe");
-            boolean success = facade.processPayment(selected.getBookingID(), strategy);
-            showAlert("Payment", success ? "Payment Successful" : "Payment Failed");
+        if (selected == null) {
+            showAlert("Selection Error", "Please select a booking from the table to pay for.");
+            return;
         }
+
+        // Check if they already paid
+        ca.yorku.eecs3311.model.payment.Payment existingPayment = facade.getPaymentReceipt(selected.getBookingID());
+        if (existingPayment != null && "COMPLETED".equals(existingPayment.getStatus())) {
+            showAlert("Already Paid", "This booking is already paid in full.\n" +
+                    "Receipt ID: " + existingPayment.getTransactionID() + "\n" +
+                    "Method: " + existingPayment.getPaymentMethod());
+            return;
+        }
+
+        // Check booking state (Cannot pay for PENDING or CANCELLED)
+        String status = selected.getStatus().name();
+        if ("PENDING".equals(status) || "CONFIRMED".equals(status)) {
+            showAlert("Payment Not Ready", "You can only pay your balance after you confirm arrival (ACTIVE state).");
+            return;
+        }
+        if ("CANCELLED".equals(status)) {
+            showAlert("Cancelled", "This booking was cancelled. No balance is due.");
+            return;
+        }
+
+        // Identify User Role
+        ca.yorku.eecs3311.model.user.User user = selected.getUser();
+        UserType type = user.getUserType();
+
+        // Build Dynamic Payment Options based on Role (Req 10)
+        List<String> options = new ArrayList<>();
+        options.add("Credit Card");
+        options.add("Debit Card");
+
+        if (type == UserType.FACULTY) {
+            options.add("Institutional Account");
+        } else if (type == UserType.RESEARCHER) {
+            options.add("Research Grant");
+        }
+
+        // Launch the UI Dialog Box
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("Credit Card", options);
+        dialog.setTitle("Select Payment Method");
+        dialog.setHeaderText("Total Due: $" + String.format("%.2f", selected.getTotalCost()));
+        dialog.setContentText("Choose your payment strategy:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(choice -> {
+            PaymentStrategy strategy = null;
+
+            // instantiate the correct paymentStrategy
+            switch (choice) {
+                case "Credit Card":
+                    strategy = new CreditCardPayment("1234567890123456", "12/28", "123", user.getEmail());
+                    break;
+                case "Debit Card":
+                    // Dummy balance of $500 for testing insufficient funds later
+                    strategy = new DebitCardPayment("9876543210987654", "1234", user.getEmail(), 500.00);
+                    break;
+                case "Institutional Account":
+                    // Mocking the institutional account for the demo
+                    InstitutionalAccount acc = new InstitutionalAccount("ACC-123", user.getDepartment(), user.getUserId(), 1000.00);
+                    strategy = new InstitutionalAccountPayment(acc);
+                    break;
+                case "Research Grant":
+                    // Mocking the research grant for the demo
+                    ResearchGrant grant = new ResearchGrant("GRANT-999", "Lab Funding", user.getUserId(), 5000.00, LocalDate.now().plusYears(1));
+                    strategy = new ResearchGrantPayment(grant);
+                    break;
+            }
+
+            // execute via Facade
+            if (strategy != null) {
+                boolean success = facade.processPayment(selected.getBookingID(), strategy);
+                if (success) {
+                    showAlert("Payment Successful", "Processed via " + choice + ".\n" + strategy.getPaymentDetails());
+                } else {
+                    showAlert("Payment Failed", "Insufficient funds or invalid payment details for " + choice + ".");
+                }
+            }
+        });
     }
 
     @FXML
