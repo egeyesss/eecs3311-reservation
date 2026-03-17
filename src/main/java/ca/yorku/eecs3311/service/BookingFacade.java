@@ -4,6 +4,7 @@ import ca.yorku.eecs3311.model.booking.Booking;
 import ca.yorku.eecs3311.model.enums.EquipmentStatus;
 import ca.yorku.eecs3311.model.enums.UserType;
 import ca.yorku.eecs3311.model.equipment.Equipment;
+import ca.yorku.eecs3311.model.equipment.Lab;
 import ca.yorku.eecs3311.model.payment.PaymentService;
 import ca.yorku.eecs3311.model.payment.PaymentStrategy;
 import ca.yorku.eecs3311.model.user.User;
@@ -11,7 +12,9 @@ import ca.yorku.eecs3311.dao.PaymentDAO;
 import ca.yorku.eecs3311.model.enums.PaymentMethod;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class BookingFacade {
@@ -157,12 +160,47 @@ public class BookingFacade {
 
     // ----------------------------------------
     // Equipment queries & operations
-    // -----------------
-
-    public List<Equipment> getAllEquipment() {
-        return bookingManager.getEquipmentDAO().loadAll();
+    // ------------------------------------------
+    public void saveEquipment(Equipment equipment) {
+    // Optionally load the lab and add equipment to maintain bidirectional relationship
+    // (not required for CSV, but keeps in‑memory objects consistent)
+    if (equipment.getLabID() != null) {
+        Lab lab = bookingManager.getEquipmentDAO().findLabById(equipment.getLabID()); // you need to implement this method
+        if (lab != null) {
+            lab.addEquipment(equipment);  // this sets equipment.lab = lab
+        }
     }
+    bookingManager.getEquipmentDAO().save(equipment);
+}
+    
+    public List<Equipment> getAllEquipment() {
+        // 1. Get raw equipment list (labID is present, lab field is null)
+        List<Equipment> equipmentList = bookingManager.getEquipmentDAO().loadAll();
 
+        // 2. Load all labs and build a map: labID → Lab
+        List<Lab> allLabs = bookingManager.getEquipmentDAO().loadAllLabs(); // from EquipmentDAO
+        Map<String, Lab> labMap = new HashMap<>();
+
+        for (Lab lab : allLabs) {
+
+        labMap.put(lab.getLabID(), lab);
+
+        }
+
+        // 3. For each equipment, set its lab using the map
+        for (Equipment eq : equipmentList) {
+
+            String labId = eq.getLabID();
+            if (labId != null && labMap.containsKey(labId)) {
+            // This calls eq.setLab(this) inside addEquipment()
+            labMap.get(labId).addEquipment(eq);
+
+            }
+        }
+
+        return equipmentList;
+    }
+    
     public List<Equipment> getAvailableEquipment() {
         return bookingManager.getEquipmentDAO().loadAll()
                 .stream()
@@ -198,6 +236,10 @@ public class BookingFacade {
     /**
      * Added: Support for the Manager Dashboard's global Booking Management tab.
      */
+    public List<Lab> getAllLabs() {
+    return bookingManager.getEquipmentDAO().loadAllLabs();
+    }
+    
     public List<Booking> getAllBookings() {
         return bookingManager.getBookingDAO().loadAll();
     }

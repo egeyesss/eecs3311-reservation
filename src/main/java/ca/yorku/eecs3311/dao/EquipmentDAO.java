@@ -102,6 +102,13 @@ public class EquipmentDAO {
         return result;
     }
 
+    public Lab findLabById(String labID) {
+    for (Lab lab : loadAllLabs()) {
+        if (lab.getLabID().equals(labID)) return lab;
+    }
+    return null;
+}
+
     // -------------------------------------------------------------------------
     // Write
     // -------------------------------------------------------------------------

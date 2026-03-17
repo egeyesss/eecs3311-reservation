@@ -7,15 +7,22 @@ import ca.yorku.eecs3311.model.equipment.Sensor;
 import ca.yorku.eecs3311.model.equipment.SensorData;
 import ca.yorku.eecs3311.model.equipment.SensorObserver;
 import ca.yorku.eecs3311.service.BookingFacade;
+import ca.yorku.eecs3311.model.equipment.Lab;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -46,7 +53,19 @@ public class ManagerDashboardController implements SensorObserver {
         eqIdCol.setCellValueFactory(new PropertyValueFactory<>("equipmentID"));
         eqNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         eqStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-        eqLabCol.setCellValueFactory(new PropertyValueFactory<>("labID"));
+
+        eqLabCol.setCellValueFactory(cellData -> {
+        Equipment eq = cellData.getValue();
+        // Attempt to get the Lab object from the Equipment
+        ca.yorku.eecs3311.model.equipment.Lab lab = eq.getLab(); // Adjust import if needed
+        if (lab != null) {
+        return new SimpleStringProperty(lab.getName());
+        } else {
+        // Fallback to the lab ID if the Lab object is missing
+        return new SimpleStringProperty(eq.getLabID());
+            }
+        });
+
         eqRateCol.setCellValueFactory(new PropertyValueFactory<>("hourlyRate"));
 
         // --- Booking Table Mapping ---
@@ -104,6 +123,27 @@ public class ManagerDashboardController implements SensorObserver {
             }
         }
     }
+
+    @FXML
+    public void handleAddEquipment() {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/AddEquipment.fxml"));
+        Parent root = loader.load();
+
+        AddEquipmentController controller = loader.getController();
+        controller.setOnSaveCallback(this::loadAllEquipment); // refresh table after save
+
+        Stage stage = new Stage();
+        stage.setTitle("Add Equipment");
+        stage.setScene(new Scene(root));
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.showAndWait();
+
+    } catch (IOException e) {
+        e.printStackTrace();
+        showAlert("Error", "Could not open add equipment dialog.");
+    }
+}
 
     // -------------------------------------------------------------------------
     // BOOKING TAB LOGIC
