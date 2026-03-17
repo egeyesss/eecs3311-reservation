@@ -29,6 +29,7 @@ public class UserDashboardController {
     @FXML private TableColumn<Equipment, String> eqIdCol;
     @FXML private TableColumn<Equipment, String> eqNameCol;
     @FXML private TableColumn<Equipment, String> eqCatCol;
+    @FXML private TableColumn<Equipment, String> eqLabCol;
     @FXML private TableColumn<Equipment, Double> eqRateCol;
 
     @FXML private TableView<Booking> bookingsTable;
@@ -46,6 +47,17 @@ public class UserDashboardController {
         eqNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         eqCatCol.setCellValueFactory(new PropertyValueFactory<>("category"));
         eqRateCol.setCellValueFactory(new PropertyValueFactory<>("hourlyRate"));
+        eqLabCol.setCellValueFactory(cellData -> {
+            Equipment eq = cellData.getValue();
+            ca.yorku.eecs3311.model.equipment.Lab lab = eq.getLab();
+            if (lab != null) {
+                // format of location: Building, RoomNumber
+                return new javafx.beans.property.SimpleStringProperty(lab.getBuilding() + ", " + lab.getRoomNumber());
+            } else {
+                // fallback, error handling
+                return new javafx.beans.property.SimpleStringProperty(eq.getLabID());
+            }
+        });
 
         // Bookings Table Mapping
         bIdCol.setCellValueFactory(new PropertyValueFactory<>("bookingID"));
