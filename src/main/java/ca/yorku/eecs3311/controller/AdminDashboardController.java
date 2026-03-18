@@ -5,7 +5,6 @@ import ca.yorku.eecs3311.model.user.User;
 import ca.yorku.eecs3311.service.BookingFacade;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -68,8 +67,35 @@ public class AdminDashboardController {
                 new SimpleStringProperty(cellData.getValue().getEquipment().getName()));
 
         bookingStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
+
+        // formatted date columns
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd, HH:mm");
+
         bookingStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
+        bookingStartCol.setCellFactory(column -> new javafx.scene.control.TableCell<Booking, java.time.LocalDateTime>() {
+            @Override
+            protected void updateItem(java.time.LocalDateTime item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(formatter.format(item));
+                }
+            }
+        });
+
         bookingEndCol.setCellValueFactory(new PropertyValueFactory<>("endTime"));
+        bookingEndCol.setCellFactory(column -> new javafx.scene.control.TableCell<Booking, java.time.LocalDateTime>() {
+            @Override
+            protected void updateItem(java.time.LocalDateTime item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(formatter.format(item));
+                }
+            }
+        });
     }
 
     @FXML

@@ -16,16 +16,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Alert;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
-import java.util.Optional;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import javafx.scene.control.TableCell;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -74,11 +66,37 @@ public class UserDashboardController {
         // Custom lambda to show Equipment Name instead of the whole object
         bEquipCol.setCellValueFactory(cellData ->
                 new javafx.beans.property.SimpleStringProperty(cellData.getValue().getEquipment().getName()));
-        bStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
         bStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
         bCostCol.setCellValueFactory(new PropertyValueFactory<>("totalCost"));
 
+        // formatted date columns
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd, HH:mm");
+
+        bStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
+        bStartCol.setCellFactory(column -> new javafx.scene.control.TableCell<Booking, LocalDateTime>() {
+            @Override
+            protected void updateItem(LocalDateTime item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(formatter.format(item));
+                }
+            }
+        });
+
         bEndCol.setCellValueFactory(new PropertyValueFactory<>("endTime"));
+        bEndCol.setCellFactory(column -> new javafx.scene.control.TableCell<Booking, LocalDateTime>() {
+            @Override
+            protected void updateItem(LocalDateTime item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(formatter.format(item));
+                }
+            }
+        });
     }
 
     public void setCurrentUserId(String userId) {
@@ -111,24 +129,76 @@ public class UserDashboardController {
             return;
         }
 
-        try {
-            // Set the booking to start immediately and last for 2 hours
-            LocalDateTime start = LocalDateTime.now();
-            LocalDateTime end = start.plusHours(2);
+        // Create the Time Slot Dialog
+        javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = new javafx.scene.control.Dialog<>();
+        dialog.setTitle("Create Booking");
+        dialog.setHeaderText("Select date and time.\n(Must start at least 1 hr from now. Max duration: 4 hrs)");
 
-            facade.createBooking(currentUserId, selected.getEquipmentID(), start, end);
+        javafx.scene.control.ButtonType bookButtonType = new javafx.scene.control.ButtonType("Book Equipment", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(bookButtonType, javafx.scene.control.ButtonType.CANCEL);
 
-            // Refresh the tables to show the new PENDING booking
-            loadMyBookings();
-            loadAvailableEquipment();
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(10); grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
 
-            showAlert("Success", "Booking created! Status: PENDING.\n" +
-                    "Please wait for a Manager to confirm your slot.");
-        } catch (IllegalStateException e) {
-            // This catches the "in use by another student" error we just implemented
-            showAlert("Equipment Unavailable", e.getMessage());
-        } catch (Exception e) {
-            showAlert("Error", "An unexpected error occurred: " + e.getMessage());
+        javafx.scene.control.DatePicker datePicker = new javafx.scene.control.DatePicker(java.time.LocalDate.now());
+        javafx.scene.control.ComboBox<String> startCombo = new javafx.scene.control.ComboBox<>();
+        javafx.scene.control.ComboBox<String> endCombo = new javafx.scene.control.ComboBox<>();
+
+        for (int i = 8; i <= 22; i++) {
+            String timeStr = String.format("%02d:00", i);
+            startCombo.getItems().add(timeStr);
+            endCombo.getItems().add(timeStr);
+        }
+
+        // Defaults: Start 1 hour from now, end 2 hours from now
+        int nextHour = LocalDateTime.now().plusHours(1).getHour();
+        if (nextHour >= 8 && nextHour <= 22) {
+            startCombo.setValue(String.format("%02d:00", nextHour));
+            endCombo.setValue(String.format("%02d:00", Math.min(22, nextHour + 1)));
+        }
+
+        grid.add(new javafx.scene.control.Label("Date:"), 0, 0);
+        grid.add(datePicker, 1, 0);
+        grid.add(new javafx.scene.control.Label("Start Time:"), 0, 1);
+        grid.add(startCombo, 1, 1);
+        grid.add(new javafx.scene.control.Label("End Time:"), 0, 2);
+        grid.add(endCombo, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+
+        java.util.Optional<javafx.scene.control.ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == bookButtonType) {
+            try {
+                if (startCombo.getValue() == null || endCombo.getValue() == null) {
+                    showAlert("Input Error", "Please select both start and end times.");
+                    return;
+                }
+
+                java.time.LocalDate date = datePicker.getValue();
+                java.time.LocalTime startTime = java.time.LocalTime.parse(startCombo.getValue());
+                java.time.LocalTime endTime = java.time.LocalTime.parse(endCombo.getValue());
+
+                LocalDateTime start = LocalDateTime.of(date, startTime);
+                LocalDateTime end = LocalDateTime.of(date, endTime);
+
+                if (!end.isAfter(start)) {
+                    showAlert("Invalid Time", "End time must be after the start time.");
+                    return;
+                }
+
+                // Call facade (the backend will enforce the 1-hr advance and 4-hr max rules)
+                facade.createBooking(currentUserId, selected.getEquipmentID(), start, end);
+
+                loadMyBookings();
+                loadAvailableEquipment();
+                showAlert("Success", "Booking created! Status: PENDING.\nPlease wait for a Manager to confirm your slot.");
+
+            } catch (IllegalStateException e) {
+                showAlert("Action Denied", e.getMessage());
+            } catch (Exception e) {
+                showAlert("Error", "An unexpected error occurred: " + e.getMessage());
+            }
         }
     }
 
@@ -146,9 +216,16 @@ public class UserDashboardController {
         Booking selected = bookingsTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
             try {
+                // UI Guard for 4-hour max
+                if (selected.getDuration().toHours() >= 4) {
+                    showAlert("Action Denied", "Cannot extend: Maximum booking duration of 4 hours has been reached.");
+                    return;
+                }
+
                 LocalDateTime newEnd = selected.getEndTime().plusHours(1);
                 facade.extendBooking(selected.getBookingID(), newEnd);
                 loadMyBookings();
+                showAlert("Success", "Booking extended by 1 hour.");
             } catch (IllegalStateException e) {
                 showAlert("Action Denied", e.getMessage());
             }
@@ -163,58 +240,51 @@ public class UserDashboardController {
             return;
         }
 
-        // 1. UI guard: Prevent modifying if already started
+        // Restored UI guard: Prevent modifying if already started
         if (LocalDateTime.now().isAfter(selected.getStartTime()) || LocalDateTime.now().isEqual(selected.getStartTime())) {
             showAlert("Action Denied", "Cannot modify a booking after its scheduled start time.");
             return;
         }
 
-        // 2. Create the Dialog popup
-        Dialog<ButtonType> dialog = new Dialog<>();
+        javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = new javafx.scene.control.Dialog<>();
         dialog.setTitle("Modify Booking Time");
-        dialog.setHeaderText("Select a new date and time for your reservation.");
+        dialog.setHeaderText("Select a new date and time.\n(Max duration: 4 hrs)");
 
-        ButtonType saveButtonType = new ButtonType("Save Changes", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        javafx.scene.control.ButtonType saveButtonType = new javafx.scene.control.ButtonType("Save Changes", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, javafx.scene.control.ButtonType.CANCEL);
 
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(10); grid.setVgap(10);
         grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
 
-        // 3. Create Date & Time UI Controls
-        DatePicker datePicker = new DatePicker(selected.getStartTime().toLocalDate());
+        javafx.scene.control.DatePicker datePicker = new javafx.scene.control.DatePicker(selected.getStartTime().toLocalDate());
+        javafx.scene.control.ComboBox<String> startCombo = new javafx.scene.control.ComboBox<>();
+        javafx.scene.control.ComboBox<String> endCombo = new javafx.scene.control.ComboBox<>();
 
-        ComboBox<String> startCombo = new ComboBox<>();
-        ComboBox<String> endCombo = new ComboBox<>();
-
-        // Populate hours from 08:00 to 22:00
         for (int i = 8; i <= 22; i++) {
             String timeStr = String.format("%02d:00", i);
             startCombo.getItems().add(timeStr);
             endCombo.getItems().add(timeStr);
         }
 
-        // Pre-select current booking times
         startCombo.setValue(String.format("%02d:00", selected.getStartTime().getHour()));
         endCombo.setValue(String.format("%02d:00", selected.getEndTime().getHour()));
 
-        grid.add(new Label("New Date:"), 0, 0);
+        grid.add(new javafx.scene.control.Label("New Date:"), 0, 0);
         grid.add(datePicker, 1, 0);
-        grid.add(new Label("Start Time:"), 0, 1);
+        grid.add(new javafx.scene.control.Label("Start Time:"), 0, 1);
         grid.add(startCombo, 1, 1);
-        grid.add(new Label("End Time:"), 0, 2);
+        grid.add(new javafx.scene.control.Label("End Time:"), 0, 2);
         grid.add(endCombo, 1, 2);
 
         dialog.getDialogPane().setContent(grid);
 
-        // 4. Process the result when user clicks "Save Changes"
-        Optional<ButtonType> result = dialog.showAndWait();
+        java.util.Optional<javafx.scene.control.ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == saveButtonType) {
             try {
-                LocalDate date = datePicker.getValue();
-                LocalTime startTime = LocalTime.parse(startCombo.getValue());
-                LocalTime endTime = LocalTime.parse(endCombo.getValue());
+                java.time.LocalDate date = datePicker.getValue();
+                java.time.LocalTime startTime = java.time.LocalTime.parse(startCombo.getValue());
+                java.time.LocalTime endTime = java.time.LocalTime.parse(endCombo.getValue());
 
                 LocalDateTime newStart = LocalDateTime.of(date, startTime);
                 LocalDateTime newEnd = LocalDateTime.of(date, endTime);
@@ -224,13 +294,11 @@ public class UserDashboardController {
                     return;
                 }
 
-                // Call Facade to execute the overlap checks we wrote in BookingManager
                 facade.modifyBooking(selected.getBookingID(), newStart, newEnd);
                 loadMyBookings();
                 showAlert("Success", "Booking times successfully modified!");
 
             } catch (IllegalStateException e) {
-                // This correctly catches the overlap error if the time slot is taken!
                 showAlert("Action Denied", e.getMessage());
             } catch (Exception e) {
                 showAlert("Error", "Failed to modify booking: " + e.getMessage());

@@ -12,15 +12,10 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ButtonBar;
@@ -32,8 +27,6 @@ import javafx.geometry.Insets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -66,14 +59,14 @@ public class ManagerDashboardController implements SensorObserver {
         eqStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         eqLabCol.setCellValueFactory(cellData -> {
-        Equipment eq = cellData.getValue();
-        // Attempt to get the Lab object from the Equipment
-        ca.yorku.eecs3311.model.equipment.Lab lab = eq.getLab(); // Adjust import if needed
-        if (lab != null) {
-        return new SimpleStringProperty(lab.getName());
-        } else {
-        // Fallback to the lab ID if the Lab object is missing
-        return new SimpleStringProperty(eq.getLabID());
+            Equipment eq = cellData.getValue();
+            // Attempt to get the Lab object from the Equipment
+            ca.yorku.eecs3311.model.equipment.Lab lab = eq.getLab(); // Adjust import if needed
+            if (lab != null) {
+                return new SimpleStringProperty(lab.getName());
+            } else {
+                // Fallback to the lab ID if the Lab object is missing
+                return new SimpleStringProperty(eq.getLabID());
             }
         });
 
@@ -85,9 +78,36 @@ public class ManagerDashboardController implements SensorObserver {
                 new SimpleStringProperty(cellData.getValue().getUser().getUserId()));
         mbEquipCol.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getEquipment().getName()));
-        mbStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
-        mbEndCol.setCellValueFactory(new PropertyValueFactory<>("endTime")); // ADDED
         mbStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
+
+        // formatted date columns
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd, HH:mm");
+
+        mbStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
+        mbStartCol.setCellFactory(column -> new javafx.scene.control.TableCell<Booking, java.time.LocalDateTime>() {
+            @Override
+            protected void updateItem(java.time.LocalDateTime item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(formatter.format(item));
+                }
+            }
+        });
+
+        mbEndCol.setCellValueFactory(new PropertyValueFactory<>("endTime")); // ADDED
+        mbEndCol.setCellFactory(column -> new javafx.scene.control.TableCell<Booking, java.time.LocalDateTime>() {
+            @Override
+            protected void updateItem(java.time.LocalDateTime item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(formatter.format(item));
+                }
+            }
+        });
 
         // Load initial data
         loadAllEquipment();
