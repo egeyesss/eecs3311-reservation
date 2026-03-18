@@ -102,6 +102,13 @@ public class EquipmentDAO {
         return result;
     }
 
+    public Lab findLabById(String labID) {
+    for (Lab lab : loadAllLabs()) {
+        if (lab.getLabID().equals(labID)) return lab;
+    }
+    return null;
+}
+
     // -------------------------------------------------------------------------
     // Write
     // -------------------------------------------------------------------------
@@ -194,7 +201,7 @@ public class EquipmentDAO {
                 l.getRoomNumber(), String.valueOf(l.getCapacity()));
     }
 
-    private void writeAllEquipment(List<Equipment> equipment) {
+    public void writeAllEquipment(List<Equipment> equipment) {
         File file = new File(EQUIPMENT_FILE);
         file.getParentFile().mkdirs();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {

@@ -8,6 +8,7 @@ public class ConfirmedState implements BookingState {
 
 	public ConfirmedState(Booking booking) {
 		this.booking = booking;
+		this.booking.getEquipment().reserve();
 	}
 
 	@Override

@@ -86,6 +86,13 @@ public class Booking {
 		this.duration = Duration.between(startTime, endTime);
 	}
 
+	public void modifyTimes(LocalDateTime newStart, LocalDateTime newEnd) {
+		this.startTime = newStart;
+		this.endTime = newEnd;
+		this.duration = Duration.between(newStart, newEnd);
+		this.totalCost = calculateCost();
+	}
+
 	public String getBookingID()       { return bookingID; }
 	public User getUser()              { return user; }
 	public Equipment getEquipment()    { return equipment; }

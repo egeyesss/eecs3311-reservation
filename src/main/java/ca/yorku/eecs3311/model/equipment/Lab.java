@@ -23,7 +23,9 @@ public class Lab {
 
 	public void addEquipment(Equipment e) {
 		if (e == null) return;
-		if (!equipmentList.contains(e)) equipmentList.add(e);
+		if (!equipmentList.contains(e)) 
+			equipmentList.add(e);
+			e.setLab(this);
 	}
 
 	public void removeEquipment(Equipment e) {
