@@ -59,6 +59,7 @@
                         <Button mnemonicParsing="false" onAction="#loadMyBookings" text="Refresh List" />
                         <Button mnemonicParsing="false" onAction="#handleConfirmArrival" text="Confirm Arrival" />
                         <Button mnemonicParsing="false" onAction="#handleExtendBooking" text="Extend 1 Hr" />
+                        <Button mnemonicParsing="false" onAction="#handleModifyBooking" text="Modify Time" />
                         <Button mnemonicParsing="false" onAction="#handlePayment" text="Pay Balance" />
                         <Button mnemonicParsing="false" onAction="#handleCompleteBooking" text="Complete Booking"
                                 style="-fx-background-color: #5bc0de; -fx-text-fill: white;" />

@@ -94,6 +94,12 @@ public class BookingFacade {
         return booking;
     }
 
+    public Booking modifyBooking(String bookingID, LocalDateTime newStart, LocalDateTime newEnd) {
+        Booking booking = bookingManager.modifyBooking(bookingID, newStart, newEnd);
+        notificationService.notifyBookingModified(booking.getUser(), booking); // Optional: if you have this notification
+        return booking;
+    }
+
     public Booking cancelBooking(String bookingID) {
         Booking booking = bookingManager.cancelBooking(bookingID);
         notificationService.notifyBookingCancelled(booking.getUser(), booking);

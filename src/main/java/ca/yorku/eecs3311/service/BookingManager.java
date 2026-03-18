@@ -105,6 +105,36 @@ public class BookingManager {
         return booking;
     }
 
+    public Booking modifyBooking(String bookingID, LocalDateTime newStart, LocalDateTime newEnd) {
+        Booking booking = bookingDAO.findById(bookingID);
+        if (booking == null) throw new IllegalArgumentException("Booking not found.");
+
+        // Requirement 8: Must be modified BEFORE the booking start time
+        if (LocalDateTime.now().isAfter(booking.getStartTime()) || LocalDateTime.now().isEqual(booking.getStartTime())) {
+            throw new IllegalStateException("Cannot modify a booking after its scheduled start time.");
+        }
+
+        // State check: Cannot modify a canceled or completed booking
+        if (booking.getStatus() == BookingStatus.CANCELLED || booking.getStatus() == BookingStatus.COMPLETED) {
+            throw new IllegalStateException("Cannot modify a cancelled or completed booking.");
+        }
+
+        // Overlap check for the new time slot (ignoring this exact booking)
+        List<Booking> equipmentBookings = bookingDAO.findByEquipmentId(booking.getEquipment().getEquipmentID());
+        for (Booking other : equipmentBookings) {
+            if (other.getBookingID().equals(booking.getBookingID())) continue;
+            if (other.getStatus() == BookingStatus.CANCELLED || other.getStatus() == BookingStatus.COMPLETED) continue;
+
+            if (newStart.isBefore(other.getEndTime()) && newEnd.isAfter(other.getStartTime())) {
+                throw new IllegalStateException("Cannot modify: the new time slot overlaps with another student's booking.");
+            }
+        }
+
+        booking.modifyTimes(newStart, newEnd);
+        bookingDAO.save(booking);
+        return booking;
+    }
+
     public Booking confirmArrival(String bookingID) {
         Booking b = bookingDAO.findById(bookingID);
         if (b == null) throw new IllegalArgumentException("Booking not found.");

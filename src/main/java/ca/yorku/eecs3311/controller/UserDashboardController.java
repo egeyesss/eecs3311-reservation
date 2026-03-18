@@ -16,6 +16,16 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Alert;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
+import java.util.Optional;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -141,6 +151,89 @@ public class UserDashboardController {
                 loadMyBookings();
             } catch (IllegalStateException e) {
                 showAlert("Action Denied", e.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    public void handleModifyBooking() {
+        Booking selected = bookingsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Selection Error", "Please select a booking to modify.");
+            return;
+        }
+
+        // 1. UI guard: Prevent modifying if already started
+        if (LocalDateTime.now().isAfter(selected.getStartTime()) || LocalDateTime.now().isEqual(selected.getStartTime())) {
+            showAlert("Action Denied", "Cannot modify a booking after its scheduled start time.");
+            return;
+        }
+
+        // 2. Create the Dialog popup
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Modify Booking Time");
+        dialog.setHeaderText("Select a new date and time for your reservation.");
+
+        ButtonType saveButtonType = new ButtonType("Save Changes", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+
+        // 3. Create Date & Time UI Controls
+        DatePicker datePicker = new DatePicker(selected.getStartTime().toLocalDate());
+
+        ComboBox<String> startCombo = new ComboBox<>();
+        ComboBox<String> endCombo = new ComboBox<>();
+
+        // Populate hours from 08:00 to 22:00
+        for (int i = 8; i <= 22; i++) {
+            String timeStr = String.format("%02d:00", i);
+            startCombo.getItems().add(timeStr);
+            endCombo.getItems().add(timeStr);
+        }
+
+        // Pre-select current booking times
+        startCombo.setValue(String.format("%02d:00", selected.getStartTime().getHour()));
+        endCombo.setValue(String.format("%02d:00", selected.getEndTime().getHour()));
+
+        grid.add(new Label("New Date:"), 0, 0);
+        grid.add(datePicker, 1, 0);
+        grid.add(new Label("Start Time:"), 0, 1);
+        grid.add(startCombo, 1, 1);
+        grid.add(new Label("End Time:"), 0, 2);
+        grid.add(endCombo, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // 4. Process the result when user clicks "Save Changes"
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == saveButtonType) {
+            try {
+                LocalDate date = datePicker.getValue();
+                LocalTime startTime = LocalTime.parse(startCombo.getValue());
+                LocalTime endTime = LocalTime.parse(endCombo.getValue());
+
+                LocalDateTime newStart = LocalDateTime.of(date, startTime);
+                LocalDateTime newEnd = LocalDateTime.of(date, endTime);
+
+                if (!newEnd.isAfter(newStart)) {
+                    showAlert("Invalid Time", "End time must be after the start time.");
+                    return;
+                }
+
+                // Call Facade to execute the overlap checks we wrote in BookingManager
+                facade.modifyBooking(selected.getBookingID(), newStart, newEnd);
+                loadMyBookings();
+                showAlert("Success", "Booking times successfully modified!");
+
+            } catch (IllegalStateException e) {
+                // This correctly catches the overlap error if the time slot is taken!
+                showAlert("Action Denied", e.getMessage());
+            } catch (Exception e) {
+                showAlert("Error", "Failed to modify booking: " + e.getMessage());
             }
         }
     }
