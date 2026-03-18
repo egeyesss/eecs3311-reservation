@@ -2,4 +2,3 @@ equipmentID,name,description,category,status,hourlyRate,maintenanceNotes,lastMai
 E1,Oscilloscope 3000,Digital storage oscilloscope,Electronics,AVAILABLE,5.0,None,2026-01-15T09:00,L1
 E2,Electron Microscope,High-res imaging,Microscopy,AVAILABLE,25.0,Checked lenses,2026-02-10T14:00,L2
 E3,3D Printer,Dual extrusion 3D printer,Prototyping,AVAILABLE,10.0,Clogged nozzle,2026-03-10T11:00,L1
-E4,New Equipment,Crazy Good,EquipmentNew,AVAILABLE,7.5,,,L5

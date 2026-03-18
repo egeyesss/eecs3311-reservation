@@ -171,7 +171,19 @@ public class BookingFacade {
         }
     }
     bookingManager.getEquipmentDAO().save(equipment);
-}
+    }
+
+    public void removeEquipment(String equipmentID) {
+        // Mark as DISABLED instead of deleting
+        bookingManager.getEquipmentDAO().updateStatus(equipmentID, EquipmentStatus.DISABLED);
+    }
+
+    public void deleteEquipment(String equipmentID) {
+        // This is a hard delete that removes the record from CSV (use with caution)
+        List<Equipment> all = bookingManager.getEquipmentDAO().loadAll();
+        all.removeIf(e -> e.getEquipmentID().equals(equipmentID));
+        bookingManager.getEquipmentDAO().writeAllEquipment(all);
+    }
     
     public List<Equipment> getAllEquipment() {
         // 1. Get raw equipment list (labID is present, lab field is null)
