@@ -94,6 +94,12 @@ public class NotificationService {
         notifications.add(msg);
     }
 
+    public void notifyBookingModified(User user, Booking booking) {
+        System.out.println("NOTIFICATION: Hi " + user.getEmail() +
+                ", your booking for " + booking.getEquipment().getName() +
+                " has been successfully modified to " + booking.getStartTime() + ".");
+    }
+
     // Added: exposes an unmodifiable view of notification history so callers cannot mutate it directly
     public List<String> getNotifications() {
         return Collections.unmodifiableList(notifications);

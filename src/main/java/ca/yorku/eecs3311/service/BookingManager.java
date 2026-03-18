@@ -52,6 +52,14 @@ public class BookingManager {
     }
 
     public Booking createBooking(String userID, String equipmentID, LocalDateTime start, LocalDateTime end) {
+        // Added for req 9: Enforce 1-hour advance notice and 4-hour maximum duration
+        if (start.isBefore(LocalDateTime.now().plusMinutes(59))) {
+            throw new IllegalStateException("Bookings must be made at least 1 hour in advance.");
+        }
+        if (java.time.Duration.between(start, end).toHours() > 4) {
+            throw new IllegalStateException("Maximum booking duration is 4 hours.");
+        }
+
         if (!isEquipmentAvailable(equipmentID, start, end)) {
             throw new IllegalStateException("This equipment is in use by another student during this time slot.");
         }
@@ -88,6 +96,11 @@ public class BookingManager {
         Booking booking = bookingDAO.findById(bookingID);
         if (booking == null) throw new IllegalArgumentException("Booking not found.");
 
+        // added for req9: Enforce 4-hour maximum duration for extensions
+        if (java.time.Duration.between(booking.getStartTime(), newEndTime).toHours() > 4) {
+            throw new IllegalStateException("Cannot extend: Maximum total booking duration is 4 hours.");
+        }
+
         // Check for overlaps with other bookings for the NEW end time
         List<Booking> equipmentBookings = bookingDAO.findByEquipmentId(booking.getEquipment().getEquipmentID());
         for (Booking other : equipmentBookings) {
@@ -101,6 +114,41 @@ public class BookingManager {
         }
 
         booking.extend(newEndTime);
+        bookingDAO.save(booking);
+        return booking;
+    }
+
+    public Booking modifyBooking(String bookingID, LocalDateTime newStart, LocalDateTime newEnd) {
+        Booking booking = bookingDAO.findById(bookingID);
+        if (booking == null) throw new IllegalArgumentException("Booking not found.");
+
+        // added for req8: Must be modified BEFORE the booking start time
+        if (LocalDateTime.now().isAfter(booking.getStartTime()) || LocalDateTime.now().isEqual(booking.getStartTime())) {
+            throw new IllegalStateException("Cannot modify a booking after its scheduled start time.");
+        }
+
+        // added for req9: Enforce 4-hour max duration on modification
+        if (java.time.Duration.between(newStart, newEnd).toHours() > 4) {
+            throw new IllegalStateException("Cannot modify: Maximum booking duration is 4 hours.");
+        }
+
+        // State check: Cannot modify a canceled or completed booking
+        if (booking.getStatus() == BookingStatus.CANCELLED || booking.getStatus() == BookingStatus.COMPLETED) {
+            throw new IllegalStateException("Cannot modify a cancelled or completed booking.");
+        }
+
+        // Overlap check
+        List<Booking> equipmentBookings = bookingDAO.findByEquipmentId(booking.getEquipment().getEquipmentID());
+        for (Booking other : equipmentBookings) {
+            if (other.getBookingID().equals(booking.getBookingID())) continue;
+            if (other.getStatus() == BookingStatus.CANCELLED || other.getStatus() == BookingStatus.COMPLETED) continue;
+
+            if (newStart.isBefore(other.getEndTime()) && newEnd.isAfter(other.getStartTime())) {
+                throw new IllegalStateException("Cannot modify: the new time slot overlaps with another student's booking.");
+            }
+        }
+
+        booking.modifyTimes(newStart, newEnd);
         bookingDAO.save(booking);
         return booking;
     }
