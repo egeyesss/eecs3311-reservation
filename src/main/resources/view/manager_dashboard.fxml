@@ -29,6 +29,8 @@
                     <HBox spacing="10.0" alignment="CENTER_LEFT">
                         <Button mnemonicParsing="false" onAction="#loadAllEquipment" text="Refresh Equipment" />
                         <Button mnemonicParsing="false" onAction="#handleAddEquipment" text="Add Equipment" style="-fx-background-color: #0275d8; -fx-text-fill: white;" />
+                        <Button mnemonicParsing="false" onAction="#handleDisableEquipment" text="Disable Equipment" style="-fx-background-color: #240c0b;" />
+                        <Button mnemonicParsing="false" onAction="#handleRemoveEquipment" text="Remove Equipment" style="-fx-background-color: #8d0b06;" />
                         <Button mnemonicParsing="false" onAction="#handleMarkUnderMaintenance" text="Mark Under Maintenance" style="-fx-background-color: #d9534f;" />
                         <Button mnemonicParsing="false" onAction="#handleMarkAvailable" text="Mark Available (Fixed)" style="-fx-background-color: #5cb85c;" />
                     </HBox>

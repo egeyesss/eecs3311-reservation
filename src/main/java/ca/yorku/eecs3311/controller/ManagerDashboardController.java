@@ -230,6 +230,34 @@ public class ManagerDashboardController implements SensorObserver {
         });
     }
 
+    @FXML
+    public void handleDisableEquipment() {
+        Equipment selected = equipmentTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            try {
+                facade.removeEquipment(selected.getEquipmentID());
+                loadAllEquipment();
+                showAlert("Success", "Equipment " + selected.getEquipmentID() + " has been disabled.");
+            } catch (Exception e) {
+                showAlert("Error", e.getMessage());
+            }
+        }
+    }
+    
+    @FXML
+    public void handleRemoveEquipment() {
+        Equipment selected = equipmentTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            try {
+                facade.deleteEquipment(selected.getEquipmentID());
+                loadAllEquipment();
+                showAlert("Success", "Equipment " + selected.getEquipmentID() + " has been removed.");
+            } catch (Exception e) {
+                showAlert("Error", e.getMessage());
+            }
+        }
+    }
+
     // -------------------------------------------------------------------------
     // BOOKING TAB LOGIC
     // -------------------------------------------------------------------------
