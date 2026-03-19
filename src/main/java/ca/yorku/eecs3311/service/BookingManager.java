@@ -7,22 +7,29 @@ import ca.yorku.eecs3311.model.booking.Booking;
 import ca.yorku.eecs3311.model.enums.BookingStatus;
 import ca.yorku.eecs3311.model.enums.EquipmentStatus;
 import ca.yorku.eecs3311.model.equipment.Equipment;
+import ca.yorku.eecs3311.model.equipment.Sensor;
+import ca.yorku.eecs3311.model.equipment.SensorData;
+import ca.yorku.eecs3311.model.equipment.SensorObserver;
 import ca.yorku.eecs3311.model.user.User;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class BookingManager {
+public class BookingManager implements SensorObserver {
 
     private static BookingManager instance;
     private final UserDAO userDAO;
     private final EquipmentDAO equipmentDAO;
     private final BookingDAO bookingDAO;
+    private final Map<String, String> sensorToEquipmentMap;
 
     private BookingManager() {
         this.userDAO = new UserDAO();
         this.equipmentDAO = new EquipmentDAO();
         this.bookingDAO = new BookingDAO(userDAO, equipmentDAO);
+        this.sensorToEquipmentMap = new HashMap<>();
     }
 
     public static synchronized BookingManager getInstance() {
@@ -30,6 +37,87 @@ public class BookingManager {
             instance = new BookingManager();
         }
         return instance;
+    }
+
+    public void registerToAllSensors(List<Equipment> equipmentList) {
+        if (equipmentList == null) {
+            return;
+        }
+
+        for (Equipment equipment : equipmentList) {
+            if (equipment == null) {
+                continue;
+            }
+
+            for (Sensor sensor : equipment.getSensors()) {
+                if (sensor == null) {
+                    continue;
+                }
+
+                sensor.register(this);
+                sensorToEquipmentMap.put(sensor.getSensorID(), sensor.getEquipmentID());
+            }
+        }
+    }
+
+    @Override
+    public void update(SensorData data) {
+        if (data == null || !data.isAbnormal()) {
+            return;
+        }
+
+        String equipmentID = sensorToEquipmentMap.get(data.getSensorID());
+        if (equipmentID == null) {
+            System.out.println("No equipment mapping found for sensor: " + data.getSensorID());
+            return;
+        }
+
+        Equipment equipment = equipmentDAO.findById(equipmentID);
+        if (equipment == null) {
+            System.out.println("Equipment not found for sensor: " + data.getSensorID());
+            return;
+        }
+
+        equipment.updateStatus(EquipmentStatus.UNDER_MAINTENANCE);
+        equipment.setMaintenanceNotes(
+                "Auto-flagged by sensor " + data.getSensorID() + " due to abnormal reading at " + data.getTimestamp()
+        );
+        equipment.setLastMaintenanceDate(LocalDateTime.now());
+        equipmentDAO.save(equipment);
+
+        System.out.println("Equipment " + equipmentID + " automatically set to UNDER_MAINTENANCE.");
+
+        autoCancelUpcomingBookings(equipmentID);
+    }
+
+    private void autoCancelUpcomingBookings(String equipmentID) {
+        List<Booking> bookings = bookingDAO.findByEquipmentId(equipmentID);
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Booking booking : bookings) {
+            if (booking == null) {
+                continue;
+            }
+
+            BookingStatus status = booking.getStatus();
+
+            boolean isUpcoming = booking.getStartTime() != null && booking.getStartTime().isAfter(now);
+            boolean shouldCancel =
+                    (status == BookingStatus.PENDING || status == BookingStatus.CONFIRMED) && isUpcoming;
+
+            if (!shouldCancel) {
+                continue;
+            }
+
+            booking.cancel();
+            bookingDAO.save(booking);
+
+            System.out.println(
+                    "Auto-cancelled booking " + booking.getBookingID() +
+                            " for user " + booking.getUser().getEmail() +
+                            " because equipment " + equipmentID + " is UNDER_MAINTENANCE."
+            );
+        }
     }
 
     public boolean isEquipmentAvailable(String equipmentID, LocalDateTime start, LocalDateTime end) {
@@ -52,7 +140,6 @@ public class BookingManager {
     }
 
     public Booking createBooking(String userID, String equipmentID, LocalDateTime start, LocalDateTime end) {
-        // Added for req 9: Enforce 1-hour advance notice and 4-hour maximum duration
         if (start.isBefore(LocalDateTime.now().plusMinutes(59))) {
             throw new IllegalStateException("Bookings must be made at least 1 hour in advance.");
         }
@@ -96,18 +183,15 @@ public class BookingManager {
         Booking booking = bookingDAO.findById(bookingID);
         if (booking == null) throw new IllegalArgumentException("Booking not found.");
 
-        // added for req9: Enforce 4-hour maximum duration for extensions
         if (java.time.Duration.between(booking.getStartTime(), newEndTime).toHours() > 4) {
             throw new IllegalStateException("Cannot extend: Maximum total booking duration is 4 hours.");
         }
 
-        // Check for overlaps with other bookings for the NEW end time
         List<Booking> equipmentBookings = bookingDAO.findByEquipmentId(booking.getEquipment().getEquipmentID());
         for (Booking other : equipmentBookings) {
             if (other.getBookingID().equals(booking.getBookingID())) continue;
             if (other.getStatus() == BookingStatus.CANCELLED || other.getStatus() == BookingStatus.COMPLETED) continue;
 
-            // Check if our extension bleeds into another student's start time
             if (booking.getStartTime().isBefore(other.getEndTime()) && newEndTime.isAfter(other.getStartTime())) {
                 throw new IllegalStateException("Cannot extend: slot is already taken by another student.");
             }
@@ -122,22 +206,18 @@ public class BookingManager {
         Booking booking = bookingDAO.findById(bookingID);
         if (booking == null) throw new IllegalArgumentException("Booking not found.");
 
-        // added for req8: Must be modified BEFORE the booking start time
         if (LocalDateTime.now().isAfter(booking.getStartTime()) || LocalDateTime.now().isEqual(booking.getStartTime())) {
             throw new IllegalStateException("Cannot modify a booking after its scheduled start time.");
         }
 
-        // added for req9: Enforce 4-hour max duration on modification
         if (java.time.Duration.between(newStart, newEnd).toHours() > 4) {
             throw new IllegalStateException("Cannot modify: Maximum booking duration is 4 hours.");
         }
 
-        // State check: Cannot modify a canceled or completed booking
         if (booking.getStatus() == BookingStatus.CANCELLED || booking.getStatus() == BookingStatus.COMPLETED) {
             throw new IllegalStateException("Cannot modify a cancelled or completed booking.");
         }
 
-        // Overlap check
         List<Booking> equipmentBookings = bookingDAO.findByEquipmentId(booking.getEquipment().getEquipmentID());
         for (Booking other : equipmentBookings) {
             if (other.getBookingID().equals(booking.getBookingID())) continue;
