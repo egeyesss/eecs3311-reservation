@@ -291,15 +291,6 @@ public class ManagerDashboardController implements SensorObserver {
     }
 
     @FXML
-    public void handleConfirmBooking() {
-        Booking selected = bookingsTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            facade.confirmBooking(selected.getBookingID());
-            loadAllBookings();
-        }
-    }
-
-    @FXML
     public void handleCancelBooking() {
         Booking selected = bookingsTable.getSelectionModel().getSelectedItem();
         if (selected != null) {

@@ -54,6 +54,10 @@ public class Booking {
 		this.state = new PendingState(this);
 	}
 
+	public double getDepositAmount() {
+		return equipment.getHourlyRate();
+	}
+
 	public double calculateCost() {
 		long hours = Math.max(1, duration.toHours());
 		double baseCost = equipment.getHourlyRate() * hours;
