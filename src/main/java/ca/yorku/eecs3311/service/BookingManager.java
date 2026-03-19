@@ -32,7 +32,20 @@ public class BookingManager {
         return instance;
     }
 
+    private void processNoShows() {
+        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(20);
+        List<Booking> all = bookingDAO.loadAll();
+        for (Booking b : all) {
+            if (b.getStatus() == BookingStatus.CONFIRMED && b.getStartTime().isBefore(cutoff)) {
+                b.cancel(); // deposit is NOT refunded — forfeited
+                equipmentDAO.save(b.getEquipment());
+                bookingDAO.save(b);
+            }
+        }
+    }
+
     public boolean isEquipmentAvailable(String equipmentID, LocalDateTime start, LocalDateTime end) {
+        processNoShows();
         Equipment equipment = equipmentDAO.findById(equipmentID);
         if (equipment == null) return false;
 
@@ -157,7 +170,21 @@ public class BookingManager {
         Booking b = bookingDAO.findById(bookingID);
         if (b == null) throw new IllegalArgumentException("Booking not found.");
 
-        b.setArrivedAt(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isBefore(b.getStartTime())) {
+            throw new IllegalStateException("Cannot confirm arrival before start time");
+        }
+
+        if (now.isAfter(b.getStartTime().plusMinutes(20))) {
+            // Auto-cancel: no-show, deposit is forfeited
+            b.cancel();
+            equipmentDAO.save(b.getEquipment());
+            bookingDAO.save(b);
+            throw new IllegalStateException("Your 20-minute arrival window has expired");
+        }
+
+        b.setArrivedAt(now);
         b.activate();
         equipmentDAO.save(b.getEquipment());
         bookingDAO.save(b);
@@ -175,9 +202,9 @@ public class BookingManager {
     }
 
     public Booking findBookingById(String id) { return bookingDAO.findById(id); }
-    public List<Booking> getBookingsByUser(String id) { return bookingDAO.findByUserId(id); }
+    public List<Booking> getBookingsByUser(String id) { processNoShows(); return bookingDAO.findByUserId(id); }
     public List<Booking> getBookingsByEquipment(String id) { return bookingDAO.findByEquipmentId(id); }
-    public List<Booking> getAllBookings() { return bookingDAO.loadAll(); }
+    public List<Booking> getAllBookings() { processNoShows(); return bookingDAO.loadAll(); }
     public EquipmentDAO getEquipmentDAO() { return equipmentDAO; }
     public UserDAO getUserDAO() { return userDAO; }
     public BookingDAO getBookingDAO() { return bookingDAO; }

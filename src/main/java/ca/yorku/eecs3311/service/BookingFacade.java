@@ -122,46 +122,88 @@ public class BookingFacade {
     // Payment
     // ------------------
 
+    /**
+     * Req 4: Process deposit payment for a PENDING booking.
+     * Deposit = 1 hour's equipment fee. On success, auto-confirms the booking.
+     */
+    public boolean processDeposit(String bookingID, PaymentStrategy strategy) {
+        Booking booking = bookingManager.findBookingById(bookingID);
+        if (booking == null) throw new IllegalArgumentException("Booking not found.");
+        if (booking.getStatus() != ca.yorku.eecs3311.model.enums.BookingStatus.PENDING) {
+            throw new IllegalStateException("Deposit can only be paid for PENDING bookings.");
+        }
+
+        double depositAmount = booking.getDepositAmount();
+        paymentService.setStrategy(strategy);
+        boolean success = paymentService.executePayment(depositAmount);
+
+        if (success) {
+            PaymentMethod methodEnum = resolvePaymentMethod(strategy);
+
+            ca.yorku.eecs3311.model.payment.Payment depositRecord =
+                    new ca.yorku.eecs3311.model.payment.Payment(
+                            bookingID,
+                            booking.getUser().getUserId(),
+                            depositAmount,
+                            methodEnum,
+                            true // isDeposit = true
+                    );
+            depositRecord.setStatus("COMPLETED");
+            new PaymentDAO().save(depositRecord);
+
+            // Update in-memory booking and persist: set depositPaid then auto-confirm
+            booking.setDepositPaid(depositAmount);
+            booking.confirm();
+            bookingManager.getEquipmentDAO().save(booking.getEquipment());
+            bookingManager.getBookingDAO().save(booking);
+            notificationService.notifyBookingConfirmed(booking.getUser(), booking);
+        }
+
+        return success;
+    }
+
+    /**
+     * Req 4: Pay the remaining balance (totalCost - depositPaid). Only valid for ACTIVE bookings.
+     */
     public boolean processPayment(String bookingID, PaymentStrategy strategy) {
         Booking booking = bookingManager.findBookingById(bookingID);
         if (booking == null) {
             throw new IllegalArgumentException("Booking not found.");
         }
 
+        double balance = booking.getTotalCost() - booking.getDepositPaid();
         paymentService.setStrategy(strategy);
-        boolean success = paymentService.executePayment(booking.getTotalCost());
+        boolean success = paymentService.executePayment(balance);
 
-        // req 10: The Missing Persistence Link
         if (success) {
-            // Map the Strategy to the Enumerations
-            PaymentMethod methodEnum;
-            if (strategy instanceof ca.yorku.eecs3311.model.payment.CreditCardPayment) {
-                methodEnum = PaymentMethod.CREDIT_CARD;
-            } else if (strategy instanceof ca.yorku.eecs3311.model.payment.DebitCardPayment) {
-                methodEnum = PaymentMethod.DEBIT_CARD;
-            } else if (strategy instanceof ca.yorku.eecs3311.model.payment.InstitutionalAccountPayment) {
-                methodEnum = PaymentMethod.INSTITUTIONAL_ACCOUNT;
-            } else {
-                methodEnum = PaymentMethod.RESEARCH_GRANT;
-            }
+            PaymentMethod methodEnum = resolvePaymentMethod(strategy);
 
             // Create the Payment Record (isDeposit = false)
             ca.yorku.eecs3311.model.payment.Payment paymentRecord =
                     new ca.yorku.eecs3311.model.payment.Payment(
                             bookingID,
                             booking.getUser().getUserId(),
-                            booking.getTotalCost(),
+                            balance,
                             methodEnum,
                             false
                     );
             paymentRecord.setStatus("COMPLETED");
-
-            // Update the CSV
-            PaymentDAO paymentDAO = new PaymentDAO();
-            paymentDAO.save(paymentRecord);
+            new PaymentDAO().save(paymentRecord);
         }
 
         return success;
+    }
+
+    private PaymentMethod resolvePaymentMethod(PaymentStrategy strategy) {
+        if (strategy instanceof ca.yorku.eecs3311.model.payment.CreditCardPayment) {
+            return PaymentMethod.CREDIT_CARD;
+        } else if (strategy instanceof ca.yorku.eecs3311.model.payment.DebitCardPayment) {
+            return PaymentMethod.DEBIT_CARD;
+        } else if (strategy instanceof ca.yorku.eecs3311.model.payment.InstitutionalAccountPayment) {
+            return PaymentMethod.INSTITUTIONAL_ACCOUNT;
+        } else {
+            return PaymentMethod.RESEARCH_GRANT;
+        }
     }
 
     // ----------------------------------------
@@ -260,7 +302,7 @@ public class BookingFacade {
     }
     
     public List<Booking> getAllBookings() {
-        return bookingManager.getBookingDAO().loadAll();
+        return bookingManager.getAllBookings();
     }
 
     public List<Booking> getBookingsByUser(String userID) {
@@ -273,16 +315,23 @@ public class BookingFacade {
 
     public ca.yorku.eecs3311.model.payment.Payment getPaymentReceipt(String bookingID) {
         ca.yorku.eecs3311.dao.PaymentDAO paymentDAO = new ca.yorku.eecs3311.dao.PaymentDAO();
-
-        // 1. Get the list of payments for this booking
         java.util.List<ca.yorku.eecs3311.model.payment.Payment> payments = paymentDAO.findByBookingId(bookingID);
+        if (payments == null || payments.isEmpty()) return null;
 
-        // 2. Check if the list is empty
-        if (payments != null && !payments.isEmpty()) {
-            // 3. Return the most recent payment (the last one in the list)
-            return payments.get(payments.size() - 1);
+        // Return the most recent non-deposit (balance) payment, if any
+        for (int i = payments.size() - 1; i >= 0; i--) {
+            if (!payments.get(i).isDeposit()) return payments.get(i);
         }
+        return null;
+    }
 
-        return null; // No payments found
+    public ca.yorku.eecs3311.model.payment.Payment getDepositReceipt(String bookingID) {
+        ca.yorku.eecs3311.dao.PaymentDAO paymentDAO = new ca.yorku.eecs3311.dao.PaymentDAO();
+        java.util.List<ca.yorku.eecs3311.model.payment.Payment> payments = paymentDAO.findByBookingId(bookingID);
+        if (payments == null || payments.isEmpty()) return null;
+        for (ca.yorku.eecs3311.model.payment.Payment p : payments) {
+            if (p.isDeposit() && "COMPLETED".equals(p.getStatus())) return p;
+        }
+        return null;
     }
 }
