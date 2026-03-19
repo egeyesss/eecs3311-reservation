@@ -15,14 +15,14 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Requirement 5: initialize backend sensor monitoring at app startup
+        // Initialize backend sensor monitoring at app startup --> implemented in req5
         initializeSensorMonitoring();
 
         // Load the initial login view
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
         Scene scene = new Scene(loader.load(), 800, 600);
 
-        // Phase 8: Apply the CSS stylesheet
+        // CSS stylesheet
         scene.getStylesheets().add(getClass().getResource("/styles/app.css").toExternalForm());
 
         primaryStage.setTitle("YorkU Lab Equipment Reservation Platform");

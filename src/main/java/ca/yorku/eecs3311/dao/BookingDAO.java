@@ -25,9 +25,7 @@ public class BookingDAO {
         this.equipmentDAO = equipmentDAO;
     }
 
-    // -------------------------------------------------------------------------
-    // Read
-    // -------------------------------------------------------------------------
+    // CSV READ
 
     public List<Booking> loadAll() {
         List<Booking> list = new ArrayList<>();
@@ -76,9 +74,7 @@ public class BookingDAO {
         return result;
     }
 
-    // -------------------------------------------------------------------------
-    // Write
-    // -------------------------------------------------------------------------
+    // CSV WRITE
 
     public void save(Booking booking) {
         List<Booking> all = loadAll();
@@ -117,9 +113,7 @@ public class BookingDAO {
         writeAll(all);
     }
 
-    // -------------------------------------------------------------------------
-    // Internal helpers
-    // -------------------------------------------------------------------------
+    // HELPER METHODS / FUNCTIONS
 
     private Booking parseRow(String[] p) {
         if (p.length < 10) return null;
@@ -162,7 +156,7 @@ public class BookingDAO {
                 b.setState(new CancelledState(b));
                 break;
             default:
-                // PendingState is usually the default in the Booking constructor
+                // PendingState is the default in the Booking constructor
                 break;
         }
 

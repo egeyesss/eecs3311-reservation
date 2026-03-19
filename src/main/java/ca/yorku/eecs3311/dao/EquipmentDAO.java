@@ -21,9 +21,7 @@ public class EquipmentDAO {
     private static final String LAB_HEADER =
             "labID,name,building,roomNumber,capacity";
 
-    // -------------------------------------------------------------------------
-    // Read
-    // -------------------------------------------------------------------------
+    // CSV READ
 
     public List<Equipment> loadAll() {
         List<Equipment> list = new ArrayList<>();
@@ -109,9 +107,7 @@ public class EquipmentDAO {
     return null;
 }
 
-    // -------------------------------------------------------------------------
-    // Write
-    // -------------------------------------------------------------------------
+    // CSV WRITE
 
     public void save(Equipment equipment) {
         List<Equipment> all = loadAll();
@@ -152,9 +148,7 @@ public class EquipmentDAO {
         writeAllLabs(all);
     }
 
-    // -------------------------------------------------------------------------
-    // Internal helpers
-    // -------------------------------------------------------------------------
+    // HELPER METHODS / FUNCTIONS
 
     private Equipment parseEquipmentRow(String[] p) {
         if (p.length < 5) throw new IllegalArgumentException("Too few columns");

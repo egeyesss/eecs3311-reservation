@@ -16,9 +16,7 @@ public class UserDAO {
             "userId,email,password,userType,accountStatus,registrationDate," +
             "department,credentialNumber,extraField1,extraField2,extraField3";
 
-    // -------------------------------------------------------------------------
-    // Read
-    // -------------------------------------------------------------------------
+    // CSV READ
 
     public List<User> loadAll() {
         List<User> users = new ArrayList<>();
@@ -58,9 +56,7 @@ public class UserDAO {
         return null;
     }
 
-    // -------------------------------------------------------------------------
-    // Write
-    // -------------------------------------------------------------------------
+    // CSV WRITE
 
     public void save(User user) {
         List<User> all = loadAll();
@@ -82,9 +78,7 @@ public class UserDAO {
         writeAll(all);
     }
 
-    // -------------------------------------------------------------------------
-    // Internal helpers
-    // -------------------------------------------------------------------------
+    // HELPER METHODS / FUNCTIONS
 
     private User parseRow(String[] p) {
         if (p.length < 8) return null;

@@ -14,9 +14,7 @@ public class PaymentDAO {
     private static final String HEADER =
             "paymentID,bookingID,userId,amount,paymentMethod,paymentDate,transactionID,status,isDeposit";
 
-    // -------------------------------------------------------------------------
-    // Read
-    // -------------------------------------------------------------------------
+    // CSV READ
 
     public List<Payment> loadAll() {
         List<Payment> list = new ArrayList<>();
@@ -64,9 +62,7 @@ public class PaymentDAO {
         return result;
     }
 
-    // -------------------------------------------------------------------------
-    // Write
-    // -------------------------------------------------------------------------
+    // CSV WRITE
 
     public void save(Payment payment) {
         List<Payment> all = loadAll();
@@ -88,9 +84,7 @@ public class PaymentDAO {
         writeAll(all);
     }
 
-    // -------------------------------------------------------------------------
-    // Internal helpers
-    // -------------------------------------------------------------------------
+    // HELPER METHODS / FUNCTIONS
 
     private Payment parseRow(String[] p) {
         if (p.length < 9) throw new IllegalArgumentException("Too few columns");

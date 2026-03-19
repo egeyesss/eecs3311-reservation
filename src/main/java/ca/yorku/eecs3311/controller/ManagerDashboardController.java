@@ -48,12 +48,12 @@ public class ManagerDashboardController implements SensorObserver {
     @FXML private TableColumn<Booking, String> mbUserCol;
     @FXML private TableColumn<Booking, String> mbEquipCol;
     @FXML private TableColumn<Booking, LocalDateTime> mbStartCol;
-    @FXML private TableColumn<Booking, LocalDateTime> mbEndCol; // ADDED
+    @FXML private TableColumn<Booking, LocalDateTime> mbEndCol;
     @FXML private TableColumn<Booking, String> mbStatusCol;
 
     @FXML
     public void initialize() {
-        // --- Equipment Table Mapping ---
+        // Equipment Table Mapping
         eqIdCol.setCellValueFactory(new PropertyValueFactory<>("equipmentID"));
         eqNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         eqStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
@@ -72,15 +72,18 @@ public class ManagerDashboardController implements SensorObserver {
 
         eqRateCol.setCellValueFactory(new PropertyValueFactory<>("hourlyRate"));
 
-        // --- Booking Table Mapping ---
+        // Booking Table Mapping
         mbIdCol.setCellValueFactory(new PropertyValueFactory<>("bookingID"));
+
         mbUserCol.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getUser().getUserId()));
+
         mbEquipCol.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getEquipment().getName()));
+
         mbStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        // formatted date columns
+        // Formatted date columns
         java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd, HH:mm");
 
         mbStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
@@ -96,7 +99,7 @@ public class ManagerDashboardController implements SensorObserver {
             }
         });
 
-        mbEndCol.setCellValueFactory(new PropertyValueFactory<>("endTime")); // ADDED
+        mbEndCol.setCellValueFactory(new PropertyValueFactory<>("endTime"));
         mbEndCol.setCellFactory(column -> new javafx.scene.control.TableCell<Booking, java.time.LocalDateTime>() {
             @Override
             protected void updateItem(java.time.LocalDateTime item, boolean empty) {

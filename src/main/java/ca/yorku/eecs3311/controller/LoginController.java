@@ -29,7 +29,6 @@ public class LoginController {
     @FXML private PasswordField regPasswordField;
     @FXML private TextField regDeptField;
     @FXML private ComboBox<UserType> regTypeComboBox;
-    // new register fields for req 8
     @FXML private VBox regCredContainer;
     @FXML private Label regCredLabel;
     @FXML private TextField regCredField;
@@ -43,7 +42,7 @@ public class LoginController {
                             .collect(Collectors.toList())
             );
 
-            // req 8: Dynamic UI Listener
+            // Dynamic UI Listener --> implemented in req8
             regTypeComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal == null) return;
 
@@ -115,7 +114,7 @@ public class LoginController {
                 return;
             }
 
-            // req 8: Validate the dynamic credential field
+            // Validate the dynamic credential field --> implemented in req8
             String cred = regCredContainer.isVisible() ? regCredField.getText() : null;
             if (regCredContainer.isVisible() && (cred == null || cred.trim().isEmpty())) {
                 showAlert("Input Error", "Please provide your " + regCredLabel.getText().replace(":", ""));
@@ -149,7 +148,7 @@ public class LoginController {
 
     @FXML
     public void handleGoToLogin() {
-        // Use regEmailField because we are on the register page
+        // make sure register page uses regEmailField
         switchScene("/view/login.fxml", regEmailField);
     }
 

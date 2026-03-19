@@ -27,6 +27,7 @@ public class UserDashboardController {
     private final BookingFacade facade = new BookingFacade();
     private String currentUserId;
 
+    // Equipment Fields
     @FXML private TableView<Equipment> equipmentTable;
     @FXML private TableColumn<Equipment, String> eqIdCol;
     @FXML private TableColumn<Equipment, String> eqNameCol;
@@ -34,6 +35,7 @@ public class UserDashboardController {
     @FXML private TableColumn<Equipment, String> eqLabCol;
     @FXML private TableColumn<Equipment, Double> eqRateCol;
 
+    // Booking Fields
     @FXML private TableView<Booking> bookingsTable;
     @FXML private TableColumn<Booking, String> bIdCol;
     @FXML private TableColumn<Booking, String> bEquipCol;
@@ -53,23 +55,24 @@ public class UserDashboardController {
             Equipment eq = cellData.getValue();
             ca.yorku.eecs3311.model.equipment.Lab lab = eq.getLab();
             if (lab != null) {
-                // format of location: Building, RoomNumber
+                // Format of location: Building, RoomNumber
                 return new javafx.beans.property.SimpleStringProperty(lab.getBuilding() + ", " + lab.getRoomNumber());
             } else {
-                // fallback, error handling
+                // Fallback in case --> error handling
                 return new javafx.beans.property.SimpleStringProperty(eq.getLabID());
             }
         });
 
         // Bookings Table Mapping
         bIdCol.setCellValueFactory(new PropertyValueFactory<>("bookingID"));
+
         // Custom lambda to show Equipment Name instead of the whole object
         bEquipCol.setCellValueFactory(cellData ->
                 new javafx.beans.property.SimpleStringProperty(cellData.getValue().getEquipment().getName()));
         bStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
         bCostCol.setCellValueFactory(new PropertyValueFactory<>("totalCost"));
 
-        // formatted date columns
+        // Formatted date columns
         java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd, HH:mm");
 
         bStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
@@ -151,7 +154,7 @@ public class UserDashboardController {
             endCombo.getItems().add(timeStr);
         }
 
-        // Defaults: Start 1 hour from now, end 2 hours from now
+        // Default Booking --> Start 1 hour from now, end 2 hours from now
         int nextHour = LocalDateTime.now().plusHours(1).getHour();
         if (nextHour >= 8 && nextHour <= 22) {
             startCombo.setValue(String.format("%02d:00", nextHour));
@@ -187,13 +190,13 @@ public class UserDashboardController {
                     return;
                 }
 
-                // Call facade (the backend will enforce the 1-hr advance and 4-hr max rules)
+                // Call to BookingFacade (the backend will enforce the 1-hr advance and 4-hr max rules)
                 Booking newBooking = facade.createBooking(currentUserId, selected.getEquipmentID(), start, end);
 
-                // Req 4: immediately require deposit to confirm
+                // Immediately require deposit to confirm --> changed in req4
                 boolean depositPaid = showDepositPaymentDialog(newBooking);
                 if (!depositPaid) {
-                    // User declined deposit — cancel the booking
+                    // User declines deposit --> cancel the booking
                     facade.cancelBooking(newBooking.getBookingID());
                     showAlert("Booking Cancelled", "Deposit was not paid. Your booking has been cancelled.");
                 } else {
@@ -225,7 +228,7 @@ public class UserDashboardController {
         Booking selected = bookingsTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
             try {
-                // UI Guard for 4-hour max
+                // UI Guard for 4-hour max booking time
                 if (selected.getDuration().toHours() >= 4) {
                     showAlert("Action Denied", "Cannot extend: Maximum booking duration of 4 hours has been reached.");
                     return;
@@ -249,7 +252,7 @@ public class UserDashboardController {
             return;
         }
 
-        // Restored UI guard: Prevent modifying if already started
+        // UI guard --> Prevent modifying if booking has already started
         if (LocalDateTime.now().isAfter(selected.getStartTime()) || LocalDateTime.now().isEqual(selected.getStartTime())) {
             showAlert("Action Denied", "Cannot modify a booking after its scheduled start time.");
             return;
@@ -339,7 +342,7 @@ public class UserDashboardController {
                 loadMyBookings();
                 showAlert("Success", "Arrival confirmed! Your booking is now ACTIVE.");
             } catch (IllegalStateException e) {
-                // Covers: before start time, window expired (auto-cancelled), wrong state
+                // Before start time --> window expired (auto-cancelled), wrong state
                 loadMyBookings();
                 loadAvailableEquipment();
                 showAlert("Action Denied", e.getMessage());
@@ -368,7 +371,7 @@ public class UserDashboardController {
         }
 
         if ("PENDING".equals(status)) {
-            // Req 4: charge deposit to confirm the booking
+            // Charge deposit to confirm the booking --> implemented in req4
             boolean paid = showDepositPaymentDialog(selected);
             if (paid) {
                 loadMyBookings();
@@ -377,7 +380,7 @@ public class UserDashboardController {
             return;
         }
 
-        // ACTIVE or COMPLETED: check if balance already paid
+        // ACTIVE or COMPLETED booking --> check if balance already paid
         ca.yorku.eecs3311.model.payment.Payment existingPayment = facade.getPaymentReceipt(selected.getBookingID());
         if (existingPayment != null && "COMPLETED".equals(existingPayment.getStatus())) {
             showAlert("Already Paid", "This booking is already paid in full.\n" +
@@ -441,10 +444,9 @@ public class UserDashboardController {
         });
     }
 
-    /**
-     * Req 4: Shows a deposit payment dialog immediately after booking creation.
-     * Returns true if deposit was successfully paid, false if cancelled.
-     */
+
+    // Req 4: Shows a deposit payment dialog immediately after booking creation.
+    // Returns true if deposit was successfully paid, false if cancelled.
     private boolean showDepositPaymentDialog(Booking booking) {
         ca.yorku.eecs3311.model.user.User user = booking.getUser();
         ca.yorku.eecs3311.model.enums.UserType type = user.getUserType();

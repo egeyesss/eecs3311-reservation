@@ -29,7 +29,7 @@ public class AdminDashboardController {
     @FXML private TableColumn<User, String> statusCol;
     @FXML private TableColumn<User, String> credCol;
 
-    // Booking Oversight Fields
+    // Booking Fields
     @FXML private TableView<Booking> bookingsTable;
     @FXML private TableColumn<Booking, String> bookingIdCol;
     @FXML private TableColumn<Booking, String> targetCol;
@@ -48,14 +48,14 @@ public class AdminDashboardController {
 
     @FXML
     public void initialize() {
-        // --- User Table Mapping ---
+        // User Table Mapping
         userIdCol.setCellValueFactory(new PropertyValueFactory<>("userId"));
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
         userTypeCol.setCellValueFactory(new PropertyValueFactory<>("userType"));
         statusCol.setCellValueFactory(new PropertyValueFactory<>("accountStatus"));
         credCol.setCellValueFactory(new PropertyValueFactory<>("credentialNumber"));
 
-        // --- Booking Table Mapping ---
+        // Booking Table Mapping
         bookingIdCol.setCellValueFactory(new PropertyValueFactory<>("bookingID"));
 
         // Custom cell value for User ID
@@ -68,7 +68,7 @@ public class AdminDashboardController {
 
         bookingStatusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        // formatted date columns
+        // Formatted date columns
         java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd, HH:mm");
 
         bookingStartCol.setCellValueFactory(new PropertyValueFactory<>("startTime"));
@@ -119,10 +119,10 @@ public class AdminDashboardController {
         List<Booking> results;
 
         if (searchId.isEmpty()) {
-            // Logic: Load everything if search is empty
+            //  search is empty --> Load everything
             results = facade.getAllBookings();
         } else {
-            // Search by User ID first, then Equipment ID
+            // else --> Search by User ID first, then Equipment ID
             results = facade.getBookingsByUser(searchId);
             if (results.isEmpty()) {
                 results = facade.getBookingsByEquipment(searchId);

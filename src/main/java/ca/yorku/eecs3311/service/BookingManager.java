@@ -61,13 +61,13 @@ public class BookingManager implements SensorObserver {
         }
     }
 
-    // teammate logic: auto-cancel confirmed no-shows after 20 minutes
+    // auto-cancel confirmed no-shows after 20 minutes
     private void processNoShows() {
         LocalDateTime cutoff = LocalDateTime.now().minusMinutes(20);
         List<Booking> all = bookingDAO.loadAll();
         for (Booking b : all) {
             if (b.getStatus() == BookingStatus.CONFIRMED && b.getStartTime().isBefore(cutoff)) {
-                b.cancel(); // deposit is NOT refunded — forfeited
+                b.cancel(); // deposit is NOT refunded --> dont' need it for this project's scope
                 equipmentDAO.save(b.getEquipment());
                 bookingDAO.save(b);
             }
@@ -292,7 +292,7 @@ public class BookingManager implements SensorObserver {
             }
         }
 
-        // FIX: Lazy-load the sensor for the usage tracker
+        // Lazy-load the sensor for the usage tracker
         if (b.getEquipment().getSensors().isEmpty()) {
             ca.yorku.eecs3311.model.equipment.Sensor newSensor = new ca.yorku.eecs3311.model.equipment.Sensor(
                     "SENSOR_" + b.getEquipment().getEquipmentID(),

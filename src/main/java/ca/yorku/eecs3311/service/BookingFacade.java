@@ -122,10 +122,8 @@ public class BookingFacade {
     // Payment
     // ------------------
 
-    /**
-     * Req 4: Process deposit payment for a PENDING booking.
-     * Deposit = 1 hour's equipment fee. On success, auto-confirms the booking.
-     */
+     // Req 4: Process deposit payment for a PENDING booking.
+     // Deposit = 1 hour's equipment fee. On success, auto-confirms the booking.
     public boolean processDeposit(String bookingID, PaymentStrategy strategy) {
         Booking booking = bookingManager.findBookingById(bookingID);
         if (booking == null) throw new IllegalArgumentException("Booking not found.");
@@ -208,12 +206,12 @@ public class BookingFacade {
 
     // ----------------------------------------
     // Equipment queries & operations
-    // ------------------------------------------
+    // -------------
     public void saveEquipment(Equipment equipment) {
     // Optionally load the lab and add equipment to maintain bidirectional relationship
     // (not required for CSV, but keeps in‑memory objects consistent)
     if (equipment.getLabID() != null) {
-        Lab lab = bookingManager.getEquipmentDAO().findLabById(equipment.getLabID()); // you need to implement this method
+        Lab lab = bookingManager.getEquipmentDAO().findLabById(equipment.getLabID());
         if (lab != null) {
             lab.addEquipment(equipment);  // this sets equipment.lab = lab
         }
@@ -227,17 +225,17 @@ public class BookingFacade {
     }
 
     public void deleteEquipment(String equipmentID) {
-        // This is a hard delete that removes the record from CSV (use with caution)
+        // This is a hard delete that removes the record from CSV
         List<Equipment> all = bookingManager.getEquipmentDAO().loadAll();
         all.removeIf(e -> e.getEquipmentID().equals(equipmentID));
         bookingManager.getEquipmentDAO().writeAllEquipment(all);
     }
     
     public List<Equipment> getAllEquipment() {
-        // 1. Get raw equipment list (labID is present, lab field is null)
+        // Get raw equipment list (labID is present, lab field is null)
         List<Equipment> equipmentList = bookingManager.getEquipmentDAO().loadAll();
 
-        // 2. Load all labs and build a map: labID → Lab
+        // Load all labs and build a map: labID → Lab
         List<Lab> allLabs = bookingManager.getEquipmentDAO().loadAllLabs(); // from EquipmentDAO
         Map<String, Lab> labMap = new HashMap<>();
 
@@ -247,7 +245,7 @@ public class BookingFacade {
 
         }
 
-        // 3. For each equipment, set its lab using the map
+        // For each equipment, set its lab using the map
         for (Equipment eq : equipmentList) {
 
             String labId = eq.getLabID();
@@ -294,9 +292,6 @@ public class BookingFacade {
     // Query helpers
     // --------------------
 
-    /**
-     * Added: Support for the Manager Dashboard's global Booking Management tab.
-     */
     public List<Lab> getAllLabs() {
     return bookingManager.getEquipmentDAO().loadAllLabs();
     }
