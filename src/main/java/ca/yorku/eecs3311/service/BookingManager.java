@@ -282,6 +282,32 @@ public class BookingManager implements SensorObserver {
         b.complete();
         equipmentDAO.save(b.getEquipment());
         bookingDAO.save(b);
+
+        // req5: sensors (wear and tear equipment tracking via sensors)
+        java.time.Duration totalRunTime = java.time.Duration.ZERO;
+        List<Booking> history = bookingDAO.findByEquipmentId(b.getEquipment().getEquipmentID());
+        for (Booking past : history) {
+            if (past.getStatus() == BookingStatus.COMPLETED) {
+                totalRunTime = totalRunTime.plus(past.getDuration());
+            }
+        }
+
+        // FIX: Lazy-load the sensor for the usage tracker
+        if (b.getEquipment().getSensors().isEmpty()) {
+            ca.yorku.eecs3311.model.equipment.Sensor newSensor = new ca.yorku.eecs3311.model.equipment.Sensor(
+                    "SENSOR_" + b.getEquipment().getEquipmentID(),
+                    "TEMPERATURE",
+                    b.getEquipment().getEquipmentID()
+            );
+            b.getEquipment().addSensor(newSensor);
+            this.registerToAllSensors(java.util.Collections.singletonList(b.getEquipment()));
+        }
+
+        // Send the updated lifetime usage to the equipment's sensors
+        for (ca.yorku.eecs3311.model.equipment.Sensor sensor : b.getEquipment().getSensors()) {
+            sensor.trackUsage(new java.util.HashMap<>(), 25.0, totalRunTime);
+        }
+
         return b;
     }
 

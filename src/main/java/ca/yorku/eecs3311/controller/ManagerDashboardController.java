@@ -142,6 +142,37 @@ public class ManagerDashboardController implements SensorObserver {
     }
 
     @FXML
+    public void handleSimulateFailure() {
+        Equipment selected = equipmentTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Selection Error", "Please select an equipment to simulate a failure.");
+            return;
+        }
+
+        // FIX: Lazy-load the sensor if the CSV parser returned a fresh equipment instance without one
+        if (selected.getSensors().isEmpty()) {
+            ca.yorku.eecs3311.model.equipment.Sensor newSensor = new ca.yorku.eecs3311.model.equipment.Sensor(
+                    "SENSOR_" + selected.getEquipmentID(),
+                    "TEMPERATURE",
+                    selected.getEquipmentID()
+            );
+            selected.addSensor(newSensor);
+            // Register the backend to this freshly created sensor
+            ca.yorku.eecs3311.service.BookingManager.getInstance().registerToAllSensors(java.util.Collections.singletonList(selected));
+        }
+
+        ca.yorku.eecs3311.model.equipment.Sensor sensor = selected.getSensors().get(0);
+
+        // Trigger a temperature spike of 99.9C (which exceeds the 80.0C limit in SensorData)
+        sensor.trackUsage(new java.util.HashMap<>(), 99.9, java.time.Duration.ZERO);
+
+        loadAllEquipment(); // Refresh the table to show it automatically went offline
+        showAlert("Sensor Alert Triggered",
+                "Sent an abnormal temperature reading (99.9°C) to Sensor: " + sensor.getSensorID() +
+                        "\n\nThe system has automatically placed the equipment UNDER MAINTENANCE and cancelled upcoming bookings.");
+    }
+
+    @FXML
     public void handleMarkAvailable() {
         Equipment selected = equipmentTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
