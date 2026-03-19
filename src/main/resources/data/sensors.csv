@@ -1,4 +1,2 @@
-sensorID,sensorType,equipmentID
-S1,TEMPERATURE,E3
-S2,USAGE,E2
-S3,TEMPERATURE,E1
+sensorID,sensorType,equipmentID,lastUpdate,operationStatus,usageMetrics,temperature,runTime
+SENSOR_E2001,TEMPERATURE,E2001,2026-03-19T12:00:00,NORMAL,null,22.5,2

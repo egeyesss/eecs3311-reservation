@@ -1,10 +1,5 @@
 labID,name,building,roomNumber,capacity
-L1,Lassonde Advanced Lab,Lassonde Building,LAS 1001,30
-L2,BioTech Research Lab,Life Sciences Building,LSB 205,15
-L3,Advanced CAD Teaching Lab,Bergeron Centre for Engineering Excellence ,BRG 321,25
-L4,Robotics Research Lab,Accolade East Building,ACC 210,20
-L5,Materials Testing Lab,Scott Library,SL 110,10
-L6,Environmental Science Lab,Environmental Science Building,ESB 150,12
-L7,Computer Vision Lab,Accolade West Building,ACC 310,18
-L8,Renewable Energy Lab,Energy Research Centre,ERC 220,14
-L9,Human-Computer Interaction Lab,Accolade East Building,ACC 410,22
+L1,Lassonde Advanced Lab,Lassonde Building,LAS 1001
+L2,BioTech Research Lab,Life Sciences Building,LSB 205
+L3,Advanced CAD Teaching Lab,Bergeron Centre for Engineering Excellence ,BRG 321
+L4,Robotics Research Lab,Accolade East Building,ACC 210
