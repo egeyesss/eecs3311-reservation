@@ -56,7 +56,27 @@ public class Booking {
 
 	public double calculateCost() {
 		long hours = Math.max(1, duration.toHours());
-		return equipment.getHourlyRate() * hours;
+		double baseCost = equipment.getHourlyRate() * hours;
+		double flatFee;
+
+		switch (user.getUserType()) {
+			case STUDENT:
+				flatFee = 10.0;
+				break;
+			case FACULTY:
+				flatFee = 15.0;
+				break;
+			case RESEARCHER:
+				flatFee = 20.0;
+				break;
+			case GUEST:
+				flatFee = 30.0;
+				break;
+			default:
+				flatFee = 0.0;
+		}
+
+		return baseCost + flatFee;
 	}
 
 	public void setState(BookingState state) {
