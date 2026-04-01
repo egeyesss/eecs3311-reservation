@@ -67,7 +67,7 @@ public class PaymentDAOManualTest {
 
         List<Payment> foundByBooking = paymentDAO.findByBookingId("B-200");
         assertEquals(1, foundByBooking.size());
-        assertEquals(p1.getPaymentID(), foundByBooking.get0().getPaymentID());
+        assertEquals(p1.getPaymentID(), foundByBooking.get(0).getPaymentID());
 
         assertNull(paymentDAO.findById("non-existent-id"));
     }
