@@ -100,6 +100,11 @@ public class Booking {
 	public void complete() { state.complete(); }
 
 	public void extend(LocalDateTime newEnd) {
+
+		if (newEnd == null) {
+			throw new IllegalArgumentException("New end time cannot be null");
+		}
+
 		this.duration = Duration.between(this.startTime, newEnd);
 		state.extend(newEnd);
 		this.totalCost = calculateCost();
