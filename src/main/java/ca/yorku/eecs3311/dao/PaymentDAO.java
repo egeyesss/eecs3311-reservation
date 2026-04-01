@@ -10,7 +10,7 @@ import java.util.List;
 
 public class PaymentDAO {
 
-    private static final String FILE_PATH = "src/main/resources/data/payments.csv";
+    private static String FILE_PATH = "src/main/resources/data/payments.csv";
     private static final String HEADER =
             "paymentID,bookingID,userId,amount,paymentMethod,paymentDate,transactionID,status,isDeposit";
 
