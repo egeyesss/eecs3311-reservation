@@ -45,6 +45,8 @@ public class Payment {
 
 	public void setStatus(String status) { this.status = status; }
 	public void setTransactionID(String transactionID) { this.transactionID = transactionID; }
+	public void setPaymentID(String paymentID) { this.paymentID = paymentID; }
+	public void setPaymentDate(java.time.LocalDateTime paymentDate) { this.paymentDate = paymentDate; }
 
 	@Override
 	public String toString() {

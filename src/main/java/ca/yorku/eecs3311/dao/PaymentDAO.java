@@ -10,7 +10,7 @@ import java.util.List;
 
 public class PaymentDAO {
 
-    private static final String FILE_PATH = "src/main/resources/data/payments.csv";
+    private static String FILE_PATH = "src/main/resources/data/payments.csv";
     private static final String HEADER =
             "paymentID,bookingID,userId,amount,paymentMethod,paymentDate,transactionID,status,isDeposit";
 
@@ -100,6 +100,8 @@ public class PaymentDAO {
 
         Payment payment = new Payment(bookingID, userId, amount, method, isDeposit);
         // Restore persisted fields that override the auto-generated ones
+        payment.setPaymentID(paymentID);
+        payment.setPaymentDate(date);
         payment.setTransactionID(transactionID);
         payment.setStatus(status);
         return payment;
