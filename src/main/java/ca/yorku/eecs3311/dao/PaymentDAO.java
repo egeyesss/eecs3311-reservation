@@ -100,6 +100,8 @@ public class PaymentDAO {
 
         Payment payment = new Payment(bookingID, userId, amount, method, isDeposit);
         // Restore persisted fields that override the auto-generated ones
+        payment.setPaymentID(paymentID);
+        payment.setPaymentDate(date);
         payment.setTransactionID(transactionID);
         payment.setStatus(status);
         return payment;
