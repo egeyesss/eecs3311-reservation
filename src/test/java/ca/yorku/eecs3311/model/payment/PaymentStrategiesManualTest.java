@@ -52,4 +52,35 @@ public class PaymentStrategiesManualTest {
 
         assertThrows(IllegalArgumentException.class, () -> new InstitutionalAccountPayment(null));
     }
+
+    @Test
+    public void testResearchGrantPaymentLogic() {
+        // Test 1: Successful Validation and Processing
+        ca.yorku.eecs3311.model.user.ResearchGrant activeGrant =
+                new ca.yorku.eecs3311.model.user.ResearchGrant("G-1", "AI Study", "U-1", 1000.0, java.time.LocalDate.now().plusDays(30));
+        ResearchGrantPayment payment = new ResearchGrantPayment(activeGrant);
+
+        assertTrue(payment.validatePayment());
+        assertTrue(payment.processPayment(200.0));
+        // Ensure funds were actually deducted
+        assertEquals(800.0, activeGrant.getRemainingFunds(), 0.001);
+
+        // Test 2: Edge Cases (Negative amounts and Insufficient Funds)
+        assertFalse(payment.processPayment(-50.0));
+        assertFalse(payment.processPayment(5000.0));
+
+        // Test 3: Expired Grant Rejection
+        ca.yorku.eecs3311.model.user.ResearchGrant expiredGrant =
+                new ca.yorku.eecs3311.model.user.ResearchGrant("G-2", "Old Study", "U-1", 1000.0, java.time.LocalDate.now().minusDays(1));
+        ResearchGrantPayment expiredPayment = new ResearchGrantPayment(expiredGrant);
+
+        assertFalse(expiredPayment.validatePayment());
+        assertFalse(expiredPayment.processPayment(100.0));
+
+        // Test 4: Getters and Null Safety
+        assertTrue(payment.getPaymentDetails().contains("G-1"));
+        assertEquals(activeGrant, payment.getGrant());
+        assertThrows(IllegalArgumentException.class, () -> new ResearchGrantPayment(null));
+    }
+
 }
