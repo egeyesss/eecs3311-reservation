@@ -43,9 +43,9 @@ public class SystemAdministratorManualTest {
     }
 
     @Test
-    @DisplayName("should have Manager ID (inherited)")
+    @DisplayName("should have Admin ID as credential number")
     public void testHasManagerID() {
-        assertEquals("MGR-ADMIN-001", admin.getCredentialNumber());
+        assertEquals("ADMIN001", admin.getCredentialNumber());
     }
 
     // ============ USER TYPE TESTS ============

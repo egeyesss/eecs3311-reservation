@@ -21,7 +21,7 @@ public class AuthenticationServiceManualTest {
         authService = AuthenticationService.getInstance();
         // Clear active sessions by logging out any existing sessions
         var sessions = authService.getActiveSessions();
-        sessions.keySet().forEach(authService::logout);
+        new java.util.ArrayList<>(sessions.keySet()).forEach(authService::logout);
     }
 
     // ============ EMAIL VALIDATION TESTS ============
@@ -138,14 +138,15 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should login Student with correct credentials")
     public void testLogin_StudentSuccess() {
-        Student student = new Student("student@york.edu", "SecurePass123!", "CS",
+        String email = "login-student-" + System.nanoTime() + "@york.edu";
+        Student student = new Student(email, "SecurePass123!", "CS",
                 "STUD001", "EECS", 2);
         student.activate();
         authService.getUserDAO().save(student);
 
-        User loggedIn = authService.login("student@york.edu", "SecurePass123!");
+        User loggedIn = authService.login(email, "SecurePass123!");
         assertNotNull(loggedIn);
-        assertEquals("student@york.edu", loggedIn.getEmail());
+        assertEquals(email, loggedIn.getEmail());
         assertTrue(authService.isLoggedIn(student.getUserId()));
     }
 
@@ -170,15 +171,17 @@ public class AuthenticationServiceManualTest {
     }
 
     @Test
-    @DisplayName("should throw exception for PENDING account login attempt")
+    @DisplayName("should handle PENDING account login (Students auto-activate)")
     public void testLogin_PendingAccount() {
-        Student student = new Student("student@york.edu", "SecurePass123!", "CS",
-                "STUD001", "EECS", 2);
-        // Student remains PENDING (not activated)
-        authService.getUserDAO().save(student);
+        // Students auto-activate on registration, so use Faculty instead
+        String email = "faculty-pending-" + System.nanoTime() + "@york.edu";
+        Faculty faculty = new Faculty(email, "SecurePass123!", "CS",
+                "FAC001", "Professor");
+        // Faculty remains PENDING (not activated)
+        authService.getUserDAO().save(faculty);
 
         assertThrows(IllegalStateException.class, () ->
-            authService.login("student@york.edu", "SecurePass123!")
+            authService.login(email, "SecurePass123!")
         );
     }
 
@@ -226,12 +229,13 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should allow Faculty login when account is ACTIVE")
     public void testLogin_FacultyActive() {
-        Faculty faculty = new Faculty("professor@york.edu", "SecurePass123!", "CS",
+        String email = "active-faculty-" + System.nanoTime() + "@york.edu";
+        Faculty faculty = new Faculty(email, "SecurePass123!", "CS",
                 "FAC001", "Professor");
         faculty.activate();
         authService.getUserDAO().save(faculty);
 
-        User loggedIn = authService.login("professor@york.edu", "SecurePass123!");
+        User loggedIn = authService.login(email, "SecurePass123!");
         assertNotNull(loggedIn);
         assertInstanceOf(Faculty.class, loggedIn);
     }
@@ -241,24 +245,26 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should add user to active sessions on login")
     public void testActiveSessionsAfterLogin() {
-        Student student = new Student("student@york.edu", "SecurePass123!", "CS",
+        String email = "session-student-" + System.nanoTime() + "@york.edu";
+        Student student = new Student(email, "SecurePass123!", "CS",
                 "STUD001", "EECS", 2);
         student.activate();
         authService.getUserDAO().save(student);
 
-        authService.login("student@york.edu", "SecurePass123!");
+        authService.login(email, "SecurePass123!");
         assertTrue(authService.isLoggedIn(student.getUserId()));
     }
 
     @Test
     @DisplayName("should remove user from active sessions on logout")
     public void testLogoutRemovesSession() {
-        Student student = new Student("student@york.edu", "SecurePass123!", "CS",
+        String email = "logout-student-" + System.nanoTime() + "@york.edu";
+        Student student = new Student(email, "SecurePass123!", "CS",
                 "STUD001", "EECS", 2);
         student.activate();
         authService.getUserDAO().save(student);
 
-        authService.login("student@york.edu", "SecurePass123!");
+        authService.login(email, "SecurePass123!");
         assertTrue(authService.isLoggedIn(student.getUserId()));
 
         authService.logout(student.getUserId());
@@ -268,15 +274,16 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should retrieve active user by ID")
     public void testGetActiveUser() {
-        Student student = new Student("student@york.edu", "SecurePass123!", "CS",
+        String email = "active-student-" + System.nanoTime() + "@york.edu";
+        Student student = new Student(email, "SecurePass123!", "CS",
                 "STUD001", "EECS", 2);
         student.activate();
         authService.getUserDAO().save(student);
 
-        authService.login("student@york.edu", "SecurePass123!");
+        authService.login(email, "SecurePass123!");
         User activeUser = authService.getActiveUser(student.getUserId());
         assertNotNull(activeUser);
-        assertEquals("student@york.edu", activeUser.getEmail());
+        assertEquals(email, activeUser.getEmail());
     }
 
     @Test
@@ -311,14 +318,15 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should register Student successfully")
     public void testRegisterStudent() {
-        User user = authService.registerUser(UserType.STUDENT, "newstudent@york.edu", 
+        String email = "regstudent-" + System.nanoTime() + "@york.edu";
+        User user = authService.registerUser(UserType.STUDENT, email, 
                 "SecurePass123!", "Computer Science", "STUD1001",
                 "EECS", "3", null);
 
         assertNotNull(user);
         assertInstanceOf(Student.class, user);
         Student student = (Student) user;
-        assertEquals("newstudent@york.edu", student.getEmail());
+        assertEquals(email, student.getEmail());
         assertEquals("EECS", student.getProgram());
         assertEquals(3, student.getYearOfStudy());
         assertEquals(AccountStatus.ACTIVE, student.getAccountStatus()); // Students are auto-activated
@@ -327,7 +335,8 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should activate Student automatically on registration")
     public void testStudentAutoActivated() {
-        User user = authService.registerUser(UserType.STUDENT, "newstudent@york.edu", 
+        String email = "autostudent-" + System.nanoTime() + "@york.edu";
+        User user = authService.registerUser(UserType.STUDENT, email, 
                 "SecurePass123!", "Computer Science", "STUD1001",
                 "EECS", "3", null);
 
@@ -339,7 +348,8 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should register Guest successfully")
     public void testRegisterGuest() {
-        User user = authService.registerUser(UserType.GUEST, "guest@external.com", 
+        String email = "guest-" + System.nanoTime() + "@external.com";
+        User user = authService.registerUser(UserType.GUEST, email, 
                 "SecurePass123!", "Engineering", "GUEST1001",
                 "Tech Corp", "sponsor@techcorp.com", null);
 
@@ -353,7 +363,8 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should register Faculty with PENDING status")
     public void testRegisterFacultyPending() {
-        User user = authService.registerUser(UserType.FACULTY, "newfaculty@york.edu", 
+        String email = "regfaculty-" + System.nanoTime() + "@york.edu";
+        User user = authService.registerUser(UserType.FACULTY, email, 
                 "SecurePass123!", "Computer Science", "FAC1001",
                 "Full Professor", null, null);
 
@@ -367,7 +378,8 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should register Researcher with PENDING status")
     public void testRegisterResearcherPending() {
-        User user = authService.registerUser(UserType.RESEARCHER, "researcher@york.edu", 
+        String email = "regresearcher-" + System.nanoTime() + "@york.edu";
+        User user = authService.registerUser(UserType.RESEARCHER, email, 
                 "SecurePass123!", "Computer Science", "RES1001",
                 "Machine Learning", "GRANT-2024-001", null);
 
@@ -381,12 +393,13 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should reject registration with duplicate email")
     public void testRegisterDuplicateEmail() {
-        authService.registerUser(UserType.STUDENT, "student@york.edu", 
+        String email = "dupstudent-" + System.nanoTime() + "@york.edu";
+        authService.registerUser(UserType.STUDENT, email, 
                 "SecurePass123!", "Computer Science", "STUD1001",
                 "EECS", "1", null);
 
         assertThrows(IllegalArgumentException.class, () ->
-            authService.registerUser(UserType.STUDENT, "student@york.edu", 
+            authService.registerUser(UserType.STUDENT, email, 
                     "SecurePass123!", "Computer Science", "STUD1002",
                     "EECS", "2", null)
         );
@@ -432,7 +445,8 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should not change already approved accounts")
     public void testApproveAlreadyApproved() {
-        User user = authService.registerUser(UserType.STUDENT, "student@york.edu", 
+        String email = "approved-student-" + System.nanoTime() + "@york.edu";
+        User user = authService.registerUser(UserType.STUDENT, email, 
                 "SecurePass123!", "Computer Science", "STUD1001",
                 "EECS", "1", null);
 
@@ -457,14 +471,16 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should allow head coordinator to create manager")
     public void testHeadCoordinatorCanCreateManager() {
-        SystemAdministrator headAdmin = new SystemAdministrator("admin@york.edu", "SecurePass123!", "IT",
+        String adminEmail = "headcoord-" + System.nanoTime() + "@york.edu";
+        String mgrEmail = "newmgr-" + System.nanoTime() + "@york.edu";
+        SystemAdministrator headAdmin = new SystemAdministrator(adminEmail, "SecurePass123!", "IT",
                 "MGR-ADMIN", "ADMIN001", true);
         headAdmin.activate();
         authService.getUserDAO().save(headAdmin);
 
         assertTrue(authService.canCreateManagerAccount(headAdmin));
 
-        User newManager = authService.createManagerAccount(headAdmin, "manager@york.edu",
+        User newManager = authService.createManagerAccount(headAdmin, mgrEmail,
                 "SecurePass123!", "EECS", "MGR1001");
 
         assertNotNull(newManager);
@@ -475,7 +491,8 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should reject manager creation by non-head-coordinator")
     public void testNonHeadCoordinatorCannotCreateManager() {
-        SystemAdministrator nonHeadAdmin = new SystemAdministrator("admin@york.edu", "SecurePass123!", "IT",
+        String nonHeadEmail = "nonheadcoord-" + System.nanoTime() + "@york.edu";
+        SystemAdministrator nonHeadAdmin = new SystemAdministrator(nonHeadEmail, "SecurePass123!", "IT",
                 "MGR-ADMIN", "ADMIN001", false);
         nonHeadAdmin.activate();
 
@@ -490,7 +507,8 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should reject manager creation by non-admin user")
     public void testNonAdminCannotCreateManager() {
-        Faculty faculty = new Faculty("prof@york.edu", "SecurePass123!", "CS", "FAC001", "Prof");
+        String profEmail = "prof-" + System.nanoTime() + "@york.edu";
+        Faculty faculty = new Faculty(profEmail, "SecurePass123!", "CS", "FAC001", "Prof");
         faculty.activate();
 
         assertFalse(authService.canCreateManagerAccount(faculty));
@@ -512,11 +530,11 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should preserve password after registration")
     public void testPasswordPreservedAfterRegistration() {
-        User user = authService.registerUser(UserType.STUDENT, "student@york.edu", 
+        String email = "passpreserve-" + System.nanoTime() + "@york.edu";
+        User user = authService.registerUser(UserType.STUDENT, email, 
                 "SecurePass123!", "Computer Science", "STUD1001",
                 "EECS", "1", null);
 
-        String email = user.getEmail();
         String password = user.getPassword();
 
         // Should be able to log in with same credentials
@@ -529,21 +547,23 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should handle trimmed email in registration")
     public void testRegistrationTrimsEmail() {
-        User user = authService.registerUser(UserType.STUDENT, "  student@york.edu  ", 
+        String baseEmail = "trimstudent-" + System.nanoTime() + "@york.edu";
+        User user = authService.registerUser(UserType.STUDENT, "  " + baseEmail + "  ", 
                 "SecurePass123!", "Computer Science", "STUD1001",
                 "EECS", "1", null);
 
-        assertEquals("student@york.edu", user.getEmail());
+        assertEquals(baseEmail, user.getEmail());
     }
 
     @Test
     @DisplayName("should verify registration persists to database")
     public void testRegistrationPersistedToDatabase() {
-        authService.registerUser(UserType.STUDENT, "student@york.edu", 
+        String email = "persiststudent-" + System.nanoTime() + "@york.edu";
+        authService.registerUser(UserType.STUDENT, email, 
                 "SecurePass123!", "Computer Science", "STUD1001",
                 "EECS", "2", null);
 
-        User found = authService.getUserDAO().findByEmail("student@york.edu");
+        User found = authService.getUserDAO().findByEmail(email);
         assertNotNull(found);
         assertInstanceOf(Student.class, found);
     }

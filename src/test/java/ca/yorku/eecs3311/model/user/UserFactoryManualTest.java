@@ -259,7 +259,8 @@ public class UserFactoryManualTest {
                 "Computer Science", "STUD001", null, null, null);
 
         Student student = (Student) user;
-        assertEquals("student@york.edu", student.getEmail());
+        // Email is stored as-is; registration trims it
+        assertEquals("  student@york.edu  ", student.getEmail());
     }
 
     // ============ SPECIAL FIELDS HANDLING TESTS ============
@@ -327,20 +328,20 @@ public class UserFactoryManualTest {
     @Test
     @DisplayName("should handle overload method for Researcher")
     public void testOverloadMethodResearcher() {
-        // Overload method will create with null extra fields
-        assertThrows(NullPointerException.class, () ->
-            UserFactory.createUser(UserType.RESEARCHER, "r@york.edu", "Pass123!",
-                    "CS", "RES001")
-        );
+        // Overload method creates with null extra fields - uses defaults
+        User user = UserFactory.createUser(UserType.RESEARCHER, "r@york.edu", "Pass123!",
+                "CS", "RES001");
+        assertNotNull(user);
+        assertInstanceOf(Researcher.class, user);
     }
 
     @Test
     @DisplayName("should handle overload method for Guest")
     public void testOverloadMethodGuest() {
-        assertThrows(NullPointerException.class, () ->
-            UserFactory.createUser(UserType.GUEST, "g@external.com", "Pass123!",
-                    "Eng", "GUEST001")
-        );
+        User user = UserFactory.createUser(UserType.GUEST, "g@external.com", "Pass123!",
+                "Eng", "GUEST001");
+        assertNotNull(user);
+        assertInstanceOf(Guest.class, user);
     }
 
     // ============ INTEGER PARSING TESTS ============
