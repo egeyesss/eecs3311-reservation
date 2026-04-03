@@ -134,7 +134,7 @@ public class SystemAdministratorManualTest {
     @DisplayName("should inherit lab assignment from Manager")
     public void testInheritedLabAssignment() {
         ca.yorku.eecs3311.model.equipment.Lab lab = 
-            new ca.yorku.eecs3311.model.equipment.Lab("Lab001", "Physics Lab", "Building A", 10);
+            new ca.yorku.eecs3311.model.equipment.Lab("Lab001", "Physics Lab", "Building A", "Room 101", 10);
         
         admin.assignLab(lab);
         assertEquals(1, admin.getAssignedLabs().size());

@@ -153,7 +153,7 @@ public class ManagerManualTest {
     @Test
     @DisplayName("should assign lab to manager")
     public void testAssignLab() {
-        Lab lab = new Lab("Lab001", "Physics Lab", "Building A", 10);
+        Lab lab = new Lab("Lab001", "Physics Lab", "Building A", "Room 101", 10);
         manager.assignLab(lab);
 
         assertEquals(1, manager.getAssignedLabs().size());
@@ -163,9 +163,9 @@ public class ManagerManualTest {
     @Test
     @DisplayName("should assign multiple labs")
     public void testAssignMultipleLabs() {
-        Lab lab1 = new Lab("Lab001", "Physics Lab", "Building A", 10);
-        Lab lab2 = new Lab("Lab002", "Chemistry Lab", "Building B", 15);
-        Lab lab3 = new Lab("Lab003", "Biology Lab", "Building C", 20);
+        Lab lab1 = new Lab("Lab001", "Physics Lab", "Building A", "Room 101", 10);
+        Lab lab2 = new Lab("Lab002", "Chemistry Lab", "Building B", "Room 102", 15);
+        Lab lab3 = new Lab("Lab003", "Biology Lab", "Building C", "Room 103", 20);
 
         manager.assignLab(lab1);
         manager.assignLab(lab2);
@@ -177,7 +177,7 @@ public class ManagerManualTest {
     @Test
     @DisplayName("should not add duplicate lab assignments")
     public void testNoDuplicateLabAssignments() {
-        Lab lab = new Lab("Lab001", "Physics Lab", "Building A", 10);
+        Lab lab = new Lab("Lab001", "Physics Lab", "Building A", "Room 101", 10);
         manager.assignLab(lab);
         manager.assignLab(lab);
         manager.assignLab(lab);
@@ -188,8 +188,8 @@ public class ManagerManualTest {
     @Test
     @DisplayName("should remove lab assignment")
     public void testRemoveLab() {
-        Lab lab1 = new Lab("Lab001", "Physics Lab", "Building A", 10);
-        Lab lab2 = new Lab("Lab002", "Chemistry Lab", "Building B", 15);
+        Lab lab1 = new Lab("Lab001", "Physics Lab", "Building A", "Room 101", 10);
+        Lab lab2 = new Lab("Lab002", "Chemistry Lab", "Building B", "Room 102", 15);
 
         manager.assignLab(lab1);
         manager.assignLab(lab2);
@@ -284,7 +284,7 @@ public class ManagerManualTest {
         Manager manager2 = new Manager("manager2@york.edu", "Pass123!", "Physics", "MGR2001");
 
         manager.addPermission("MANAGE_BOOKINGS");
-        Lab lab1 = new Lab("Lab001", "Physics Lab", "Building A", 10);
+        Lab lab1 = new Lab("Lab001", "Physics Lab", "Building A", "Room 101", 10);
         manager.assignLab(lab1);
 
         assertTrue(manager.getPermissions().isEmpty() || manager.getPermissions().size() > manager2.getPermissions().size());
@@ -296,8 +296,8 @@ public class ManagerManualTest {
     @Test
     @DisplayName("should set entire assignment list")
     public void testSetAssignedLabs() {
-        Lab lab1 = new Lab("Lab001", "Physics Lab", "Building A", 10);
-        Lab lab2 = new Lab("Lab002", "Chemistry Lab", "Building B", 15);
+        Lab lab1 = new Lab("Lab001", "Physics Lab", "Building A", "Room 101", 10);
+        Lab lab2 = new Lab("Lab002", "Chemistry Lab", "Building B", "Room 102", 15);
         
         java.util.List<Lab> labs = new java.util.ArrayList<>();
         labs.add(lab1);
