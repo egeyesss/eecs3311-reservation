@@ -296,17 +296,19 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should handle multiple active sessions")
     public void testMultipleActiveSessions() {
-        Student student1 = new Student("s1@york.edu", "SecurePass123!", "CS",
+        String email1 = "s1-" + System.nanoTime() + "@york.edu";
+        String email2 = "s2-" + System.nanoTime() + "@york.edu";
+        Student student1 = new Student(email1, "SecurePass123!", "CS",
                 "S001", "EECS", 2);
-        Student student2 = new Student("s2@york.edu", "SecurePass123!", "CS",
+        Student student2 = new Student(email2, "SecurePass123!", "CS",
                 "S002", "EECS", 3);
         student1.activate();
         student2.activate();
         authService.getUserDAO().save(student1);
         authService.getUserDAO().save(student2);
 
-        authService.login("s1@york.edu", "SecurePass123!");
-        authService.login("s2@york.edu", "SecurePass123!");
+        authService.login(email1, "SecurePass123!");
+        authService.login(email2, "SecurePass123!");
 
         assertTrue(authService.isLoggedIn(student1.getUserId()));
         assertTrue(authService.isLoggedIn(student2.getUserId()));
@@ -430,7 +432,8 @@ public class AuthenticationServiceManualTest {
     @Test
     @DisplayName("should approve PENDING user account")
     public void testApproveUser() {
-        User user = authService.registerUser(UserType.FACULTY, "faculty@york.edu", 
+        String email = "faculty-" + System.nanoTime() + "@york.edu";
+        User user = authService.registerUser(UserType.FACULTY, email, 
                 "SecurePass123!", "Computer Science", "FAC1001",
                 "Full Professor", null, null);
 
