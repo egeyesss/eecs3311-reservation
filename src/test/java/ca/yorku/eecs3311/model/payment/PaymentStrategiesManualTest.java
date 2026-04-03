@@ -7,31 +7,67 @@ public class PaymentStrategiesManualTest {
 
     @Test
     public void testCreditCardValidationAndProcessing() {
+        // 1. Happy Path & Validations
         CreditCardPayment validCard = new CreditCardPayment("12345678901234", "12/28", "123", "John Doe");
         assertTrue(validCard.validatePayment());
         assertTrue(validCard.processPayment(50.0));
         assertFalse(validCard.processPayment(-10.0));
         assertTrue(validCard.getPaymentDetails().contains("John Doe"));
 
-        CreditCardPayment invalidCard = new CreditCardPayment("123", "", "12", null);
-        assertFalse(invalidCard.validatePayment());
-        assertFalse(invalidCard.processPayment(50.0)); // Should fail validation step
+        // 2. Test Getters (Missed Instructions)
+        assertEquals("12345678901234", validCard.getCardNumber());
+        assertEquals("12/28", validCard.getExpiryDate());
+        assertEquals("123", validCard.getCvv());
+        assertEquals("John Doe", validCard.getCardHolderName());
+
+        // 3. Isolate Branches (Short-Circuit Testing)
+        // Branch 1: Card Number Null or Short
+        assertFalse(new CreditCardPayment(null, "12/28", "123", "John Doe").validatePayment());
+        assertFalse(new CreditCardPayment("123", "12/28", "123", "John Doe").validatePayment());
+
+        // Branch 2: Expiry Null or Empty
+        assertFalse(new CreditCardPayment("12345678901234", null, "123", "John Doe").validatePayment());
+        assertFalse(new CreditCardPayment("12345678901234", "   ", "123", "John Doe").validatePayment());
+
+        // Branch 3: CVV Null or Short
+        assertFalse(new CreditCardPayment("12345678901234", "12/28", null, "John Doe").validatePayment());
+        assertFalse(new CreditCardPayment("12345678901234", "12/28", "12", "John Doe").validatePayment());
+
+        // Branch 4: Name Null or Empty
+        assertFalse(new CreditCardPayment("12345678901234", "12/28", "123", null).validatePayment());
+        assertFalse(new CreditCardPayment("12345678901234", "12/28", "123", "   ").validatePayment());
+
+        // Ensure a failed validation blocks processing
+        assertFalse(new CreditCardPayment("123", "12/28", "123", "John Doe").processPayment(50.0));
     }
 
     @Test
     public void testDebitCardValidationAndProcessing() {
+        // 1. Happy Path & Validations
         DebitCardPayment debit = new DebitCardPayment("12345678901234", "1234", "Jane Doe", 100.0);
         assertTrue(debit.validatePayment());
-
-        // Process successful payment
         assertTrue(debit.processPayment(60.0));
         assertEquals(40.0, debit.getAccountBalance(), 0.001);
+        assertFalse(debit.processPayment(50.0)); // Insufficient funds
+        assertFalse(debit.processPayment(-10.0)); // Negative amount
+        assertTrue(debit.getPaymentDetails().contains("Jane Doe"));
 
-        // Process insufficient funds
-        assertFalse(debit.processPayment(50.0));
+        // 2. Test Getters (Missed Instructions)
+        assertEquals("12345678901234", debit.getCardNumber());
+        assertEquals("Jane Doe", debit.getCardHolderName());
 
-        DebitCardPayment invalidDebit = new DebitCardPayment("123", null, "", 100.0);
-        assertFalse(invalidDebit.validatePayment());
+        // 3. Isolate Branches (Short-Circuit Testing)
+        // Branch 1: Card Number Null or Short
+        assertFalse(new DebitCardPayment(null, "1234", "Jane Doe", 100.0).validatePayment());
+        assertFalse(new DebitCardPayment("123", "1234", "Jane Doe", 100.0).validatePayment());
+
+        // Branch 2: PIN Null or Short
+        assertFalse(new DebitCardPayment("12345678901234", null, "Jane Doe", 100.0).validatePayment());
+        assertFalse(new DebitCardPayment("12345678901234", "12", "Jane Doe", 100.0).validatePayment());
+
+        // Branch 3: Name Null or Empty
+        assertFalse(new DebitCardPayment("12345678901234", "1234", null, 100.0).validatePayment());
+        assertFalse(new DebitCardPayment("12345678901234", "1234", "   ", 100.0).validatePayment());
     }
 
     @Test
