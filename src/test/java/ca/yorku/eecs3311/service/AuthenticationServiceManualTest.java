@@ -459,9 +459,9 @@ public class AuthenticationServiceManualTest {
     }
 
     @Test
-    @DisplayName("should handle approval of non-existent user")
+    @DisplayName("should throw exception when approving non-existent user")
     public void testApproveNonExistentUser() {
-        assertDoesNotThrow(() ->
+        assertThrows(IllegalArgumentException.class, () ->
             authService.approveUser("nonexistent-user-id")
         );
     }
