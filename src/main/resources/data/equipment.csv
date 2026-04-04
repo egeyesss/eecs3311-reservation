@@ -1,4 +1,1 @@
 equipmentID,name,description,category,status,hourlyRate,maintenanceNotes,lastMaintenanceDate,labID
-E2001,MakerBot Replicator,3D Printer for general use,3D_PRINTER,AVAILABLE,15.0,None,2026-02-15T09:00:00,L1
-E2002,CNC Router,High precision routing,CNC_MACHINE,AVAILABLE,25.0,None,2026-02-20T14:30:00,L2
-E2003,Oscilloscope,Digital storage oscilloscope,ELECTRONICS,UNDER_MAINTENANCE,10.0,Requires calibration,2026-03-18T16:00:00,L1
